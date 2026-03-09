@@ -364,15 +364,19 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
     Write-Host "  Fetching items (GraphQL)..."
     $secItems = Fetch-ProjectItems $secProjId $secProjName
     
-    # Detect current week on this secondary board
+    # Detect current week and previous week on this secondary board
     $currentWeekTitle = $null
+    $previousWeekTitle = $null
+    $prevWeekEndDate = [datetime]::MinValue
     foreach ($item in $secItems) {
         if ($item.week -and $item.week.startDate) {
             $start = [datetime]::Parse($item.week.startDate)
             $end = $start.AddDays($item.week.duration)
             if ($today -ge $start -and $today -le $end) {
                 $currentWeekTitle = $item.week.title
-                break
+            } elseif ($end -lt $today -and $end -gt $prevWeekEndDate) {
+                $previousWeekTitle = $item.week.title
+                $prevWeekEndDate = $end
             }
         }
     }
@@ -389,8 +393,11 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
     # Filter items
     $itemsToSync = @()
     foreach ($item in $secItems) {
-        if ($item.week -and $item.week.title -eq $currentWeekTitle -and $item.status -in $ValidStatuses) {
+        $isCurrentWeek = ($item.week -and $item.week.title -eq $currentWeekTitle)
+        $isLastWeek = ($previousWeekTitle -and $item.week -and $item.week.title -eq $previousWeekTitle)
+        if (($isCurrentWeek -or $isLastWeek) -and $item.status -in $ValidStatuses) {
             if ($item.url) {
+                $item.isLastWeek = $isLastWeek
                 $itemsToSync += $item
             }
         }
@@ -425,9 +432,11 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
         if ($u) { $updates.Add($u) }
         
         # 2. Iteration
-        $mv = if ($mItem -and $mItem.week) { $mItem.week.iterationId } else { $null }
-        $u = Get-UpdateHash $mv $targetIterationId $mainWeekField $targetIterationId "--iteration-id" "Week"
-        if ($u) { $updates.Add($u) }
+        if (-not $sItem.isLastWeek) {
+            $mv = if ($mItem -and $mItem.week) { $mItem.week.iterationId } else { $null }
+            $u = Get-UpdateHash $mv $targetIterationId $mainWeekField $targetIterationId "--iteration-id" "Week"
+            if ($u) { $updates.Add($u) }
+        }
         
         # 3. Priority
         $sv = $sItem.priority
@@ -461,8 +470,9 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
         $u = Get-UpdateHash $mv $sv $mainEndDateField $sv "--date" "End date"
         if ($u) { $updates.Add($u) }
         
+        $weekLabel = if ($sItem.isLastWeek) { " (last week)" } else { "" }
         if ($isNew) {
-            Write-Host "    [ADD] $title"
+            Write-Host "    [ADD] $title$weekLabel"
             $addOutput = Invoke-GHWithRetry -Arguments @("project", "item-add", "$MainProjNum", "--owner", $MainOrg, "--url", $url, "--format", "json") -JsonOutput -SuppressError
             
             if ($addOutput -and $addOutput.id) {
@@ -476,14 +486,14 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                 $mainUrlMap[$url] = @{ id = $newItemId; url = $url; status = $sItem.status }
                 $boardAdded++
                 $fieldNames = ($updates | ForEach-Object { $_.name }) -join ", "
-                $runLog.Add("  - **[ADD]** $title - fields set: $fieldNames")
+                $runLog.Add("  - **[ADD]** $title$weekLabel - fields set: $fieldNames")
             } else {
                 Write-Warning "    Failed to add $url"
-                $runLog.Add("  - **[FAIL]** Could not add: $title")
+                $runLog.Add("  - **[FAIL]** Could not add: $title$weekLabel")
             }
         } else {
             if ($updates.Count -gt 0) {
-                Write-Host "    [UPDATE] $($updates.Count) field(s): $title"
+                Write-Host "    [UPDATE] $($updates.Count) field(s): $title$weekLabel"
                 foreach ($upd in $updates) {
                     $cmdArgs = @("project", "item-edit", "--id", $mItem.id, "--project-id", $mainProjId, "--field-id", $upd.fieldId)
                     if ($upd.clear) { $cmdArgs += "--clear" }
@@ -492,10 +502,10 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                 }
                 $boardUpdated++
                 $fieldNames = ($updates | ForEach-Object { $_.name }) -join ", "
-                $runLog.Add("  - **[UPDATE]** $title - changed: $fieldNames")
+                $runLog.Add("  - **[UPDATE]** $title$weekLabel - changed: $fieldNames")
             } else {
                 $boardSkipped++
-                $runLog.Add("  - **[SKIP]** $title (already in sync)")
+                $runLog.Add("  - **[SKIP]** $title$weekLabel (already in sync)")
             }
         }
     }
