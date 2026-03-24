@@ -464,8 +464,8 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
         $u = Get-UpdateHash $mv $sv $mainStartDateField $sv "--date" "Start date"
         if ($u) { $updates.Add($u) }
         
-        # 7. Target Date -> End Date
-        $sv = $sItem.'target date'
+        # 7. Target Date / End Date -> End Date
+        $sv = if ($sItem.'target date') { $sItem.'target date' } else { $sItem.'end date' }
         $mv = if ($mItem) { $mItem.'end date' } else { $null }
         $u = Get-UpdateHash $mv $sv $mainEndDateField $sv "--date" "End date"
         if ($u) { $updates.Add($u) }
