@@ -64,5 +64,6 @@ jobs:
           fi
           git add scripts/sync-boards/sync-config.json
           git diff --staged --quiet || git commit -m "chore: auto-update board sync data"
+          git restore .
           git pull --rebase origin main
           git push
