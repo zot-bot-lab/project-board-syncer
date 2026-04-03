@@ -2,6 +2,55 @@
 
 ## 2026-04-03
 
+### V2 - 02:52 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 0     | 4       | 1592       |
+
+
+#### StudyReserve Product Board - +0 added, ~0 updated, =197 skipped
+
+#### StudyQ Product Board - +0 added, ~0 updated, =30 skipped
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =616 skipped
+
+#### UnbrandedLK Product Board - +0 added, ~0 updated, =43 skipped
+
+#### hedwige-ui-rewrite - +0 added, ~0 updated, =103 skipped
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - +0 added, ~0 updated, =301 skipped
+
+#### Lexigram Product Board - +0 added, ~0 updated, =174 skipped
+
+#### Lexigram Marketing Board - +0 added, ~0 updated, =3 skipped
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - +0 added, ~0 updated, =28 skipped
+
+#### QueueUp Product Board - +0 added, ~0 updated, =16 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - +0 added, ~0 updated, =11 skipped
+
+#### ZOT Sales Board - +0 added, ~3 updated, =19 skipped
+  - **[UPDATE]** 2026 Q2 Sales Plan - changed: Week
+  - **[UPDATE]** [Strategy] Upselling Plan - changed: Week
+  - **[UPDATE]** [2nd Part] Clutch reviews - changed: Week
+
+#### ZOT Marketing Board - +0 added, ~1 updated, =51 skipped
+  - **[UPDATE]** [Video] What is ZOT? - changed: Status: Backlog
+
 ### V1 - 12:11 PM
 
 | Added | Updated | Skipped |
