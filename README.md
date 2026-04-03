@@ -17,6 +17,20 @@ powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1
 powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -DryRun
 ```
 
+**Full backfill (sync ALL tickets, ignoring week filter — run once):**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -FullSync
+```
+> Combine with `-DryRun` to preview first: `... -FullSync -DryRun`
+> A rollback manifest is saved automatically to `changelogs/full-sync-manifest.json`.
+
+**Rollback last full backfill (emergency revert):**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -RollbackFullSync
+```
+> Only reverts tickets affected by the last `-FullSync` run. Deletes the manifest after success.
+> Preview with `-RollbackFullSync -DryRun` before committing.
+
 **What it syncs:** Status, Week (iteration), Priority, Size, Estimate, Start date, Target date (→ End date)
 
 **Config:** `scripts/sync-boards/sync-config.json`
@@ -27,6 +41,8 @@ powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -Dr
 - **Smart iteration mapping** — Maps secondary board sprints to the exact matching sprint on the main board (current + recent past sprints within 14 days)
 - **Batched GraphQL mutations** — Multiple field updates per item are sent in a single API call
 - **Dry-run mode** — Preview all changes without modifying anything (`-DryRun` flag)
+- **Full-sync mode** — One-time backfill that bypasses the week filter and syncs every item with a valid status (`-FullSync` flag)
+- **Rollback support** — Reverts only the tickets affected by the last `-FullSync` using an auto-saved manifest (`-RollbackFullSync` flag)
 - **Rate limit awareness** — Pre-checks GitHub API budget before starting
 - **Automatic retry** — Retries transient API failures and rate-limit errors
 - **ID caching** — Caches project IDs in config to avoid redundant lookups

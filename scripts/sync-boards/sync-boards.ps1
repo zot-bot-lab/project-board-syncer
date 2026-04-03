@@ -17,10 +17,21 @@ Optimizations:
 .PARAMETER DryRun
 When specified, the script runs all comparison logic but skips any write operations
 (item-add, item-edit). Useful for previewing what changes would be made.
+
+.PARAMETER FullSync
+When specified, the week/iteration filter is bypassed and ALL items with valid statuses
+are synced from every secondary board to the main board. Use once for a full backfill.
+
+.PARAMETER RollbackFullSync
+Reverts the most recent -FullSync run using the saved manifest. Removes items that were
+added and restores previous field values for items that were updated. Deletes the manifest
+after a successful rollback.
 #>
 
 param(
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$FullSync,
+    [switch]$RollbackFullSync
 )
 
 $ErrorActionPreference = "Stop"
@@ -29,6 +40,12 @@ $MAX_RETRIES = 1
 
 if ($DryRun) {
     Write-Host "[DRY-RUN] Mode enabled - no changes will be made to GitHub.`n" -ForegroundColor Cyan
+}
+if ($FullSync) {
+    Write-Host "[FULL-SYNC] Mode enabled - ALL items with valid statuses will be synced (no week filter).`n" -ForegroundColor Magenta
+}
+if ($RollbackFullSync) {
+    Write-Host "[ROLLBACK] Mode enabled - will revert the last -FullSync run using the saved manifest.`n" -ForegroundColor Yellow
 }
 
 # --- Load Config ---
@@ -108,6 +125,64 @@ function Invoke-GHWithRetry {
             return $null
         }
     }
+}
+
+# ============================================================
+# ROLLBACK: Execute and exit early if -RollbackFullSync
+# ============================================================
+if ($RollbackFullSync) {
+    $repoRootForRollback = Split-Path -Parent (Split-Path -Parent $scriptDir)
+    $manifestPath = Join-Path (Join-Path $repoRootForRollback "changelogs") "full-sync-manifest.json"
+    if (-not (Test-Path $manifestPath)) {
+        Write-Error "No full-sync manifest found at: $manifestPath`nRun -FullSync first to generate one."
+        exit 1
+    }
+    $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
+    $rbOrg     = $manifest.mainOrg
+    $rbProjNum = $manifest.mainProjNum
+    $rbProjId  = $manifest.mainProjId
+    Write-Host "[ROLLBACK] Manifest from: $($manifest.timestamp)" -ForegroundColor Yellow
+    Write-Host "[ROLLBACK] Reverting $($manifest.entries.Count) change(s) on $rbOrg (#$rbProjNum)...`n" -ForegroundColor Yellow
+    $rvAdd = 0; $rvUpd = 0; $rvFail = 0
+    foreach ($entry in $manifest.entries) {
+        if ($entry.action -eq "add") {
+            Write-Host "  [REMOVE] $($entry.title)"
+            if ($DryRun) {
+                Write-Host "    [DRY-RUN] Would delete item: $($entry.itemId)" -ForegroundColor Cyan
+                $rvAdd++
+            } else {
+                $del = Invoke-GHWithRetry -Arguments @("project", "item-delete", "$rbProjNum", "--owner", $rbOrg, "--id", $entry.itemId) -SuppressError
+                if ($del -ne $null -or $true) { $rvAdd++ } else { $rvFail++; Write-Warning "    Failed to remove: $($entry.title)" }
+            }
+        } elseif ($entry.action -eq "update") {
+            Write-Host "  [RESTORE] $($entry.title)"
+            if ($DryRun) {
+                Write-Host "    [DRY-RUN] Would restore $($entry.previousValues.Count) field(s)" -ForegroundColor Cyan
+                $rvUpd++
+            } else {
+                $restored = $true
+                foreach ($pv in $entry.previousValues) {
+                    $cmdArgs = @("project", "item-edit", "--id", $entry.itemId, "--project-id", $rbProjId, "--field-id", $pv.fieldId)
+                    if ($pv.clear) { $cmdArgs += "--clear" }
+                    else { $cmdArgs += $pv.flag; $cmdArgs += $pv.value }
+                    Invoke-GHWithRetry -Arguments $cmdArgs -SuppressError | Out-Null
+                }
+                if ($restored) { $rvUpd++ } else { $rvFail++ }
+            }
+        }
+    }
+    Write-Host ""
+    Write-Host "============================================"
+    if ($DryRun) { Write-Host "  ROLLBACK COMPLETE (DRY RUN)" } else { Write-Host "  ROLLBACK COMPLETE" }
+    Write-Host "  Removed (adds rolled back): $rvAdd"
+    Write-Host "  Restored (updates rolled back): $rvUpd"
+    Write-Host "  Failed: $rvFail"
+    Write-Host "============================================"
+    if (-not $DryRun) {
+        Remove-Item $manifestPath -Force
+        Write-Host "`n[ROLLBACK] Manifest deleted. The slate is clean." -ForegroundColor Green
+    }
+    exit 0
 }
 
 Write-Host "`n============================================"
@@ -337,11 +412,11 @@ function Get-UpdateHash {
     if (-not $field) { return $null }
     if ($sVal) {
         if (-not $mVal -or $mVal -ne $sVal) {
-            return @{ fieldId = $field.id; flag = $flag; value = [string]$targetId; clear = $false; name = $fieldName }
+            return @{ fieldId = $field.id; flag = $flag; value = [string]$targetId; clear = $false; name = $fieldName; newValue = $sVal }
         }
     } else {
         if ($mVal) {
-            return @{ fieldId = $field.id; clear = $true; name = $fieldName }
+            return @{ fieldId = $field.id; clear = $true; name = $fieldName; newValue = "None" }
         }
     }
     return $null
@@ -355,6 +430,12 @@ $totalUpdated = 0
 $totalSkipped = 0
 $runLog = [System.Collections.Generic.List[string]]::new()
 
+# Manifest tracking: only used during a live (non-dry-run) FullSync
+$repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
+$manifestPath = Join-Path (Join-Path $repoRoot "changelogs") "full-sync-manifest.json"
+$fullSyncManifest = if ($FullSync -and -not $DryRun) { [System.Collections.Generic.List[hashtable]]::new() } else { $null }
+
+try {
 for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
     $board = $config.secondaryBoards[$bi]
     $secOrg = $board.org
@@ -412,24 +493,37 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
         }
     }
     
-    if (-not $currentWeekTitle) {
-        Write-Host "  No items found in the current week. Skipping.`n"
-        $runLog.Add("")
-        $runLog.Add("#### $secProjName - Skipped")
-        $runLog.Add("*No items found in the current week.*")
-        continue
-    }
-    Write-Host "  Current iteration: $currentWeekTitle"
-    
     # Filter items
     $itemsToSync = [System.Collections.Generic.List[hashtable]]::new()
-    foreach ($item in $secItems) {
-        $isCurrentWeek = ($item.week -and $item.week.title -eq $currentWeekTitle)
-        $isLastWeek = ($previousWeekTitle -and $item.week -and $item.week.title -eq $previousWeekTitle)
-        if (($isCurrentWeek -or $isLastWeek) -and $item.status -in $ValidStatuses) {
-            if ($item.url) {
-                $item.isLastWeek = $isLastWeek
+    
+    if ($FullSync) {
+        # Full backfill: sync every item with a valid status, regardless of week
+        Write-Host "  [FULL-SYNC] Including all items (no week filter)."
+        foreach ($item in $secItems) {
+            if ($item.status -in $ValidStatuses -and $item.url) {
+                $item.isLastWeek = $false
                 $itemsToSync.Add($item)
+            }
+        }
+    } else {
+        if (-not $currentWeekTitle) {
+            Write-Host "  No items found in the current week. Skipping.`n"
+            $runLog.Add("")
+            $runLog.Add("#### $secProjName - Skipped")
+            $runLog.Add("*No items found in the current week.*")
+            continue
+        }
+        Write-Host "  Current iteration: $currentWeekTitle"
+        foreach ($item in $secItems) {
+            $isCurrentWeek = ($item.week -and $item.week.title -eq $currentWeekTitle)
+            $isLastWeek = ($previousWeekTitle -and $item.week -and $item.week.title -eq $previousWeekTitle)
+            $isAlreadyInMain = if ($item.url) { $mainUrlMap.ContainsKey($item.url) } else { $false }
+            
+            if (($isCurrentWeek -or $isLastWeek -or $isAlreadyInMain) -and $item.status -in $ValidStatuses) {
+                if ($item.url) {
+                    $item.isLastWeek = $isLastWeek
+                    $itemsToSync.Add($item)
+                }
             }
         }
     }
@@ -470,38 +564,41 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
             if ($u) { $updates.Add($u) }
         }
         
-        # 2. Iteration - resolve secondary board's sprint to matching main board sprint
-        $sTargetIterationId = $null
-        if ($sItem.week -and $sItem.week.startDate) {
-            $sStart = [datetime]::Parse($sItem.week.startDate)
-            $midPoint = $sStart.AddDays($sItem.week.duration / 2)
-            foreach ($mIter in $mainWeekConfig) {
-                if ($mIter.startDate) {
-                    $mStart = [datetime]::Parse($mIter.startDate)
-                    $mEnd = $mStart.AddDays($mIter.duration)
-                    if ($midPoint -ge $mStart -and $midPoint -le $mEnd) {
-                        $sTargetIterationId = $mIter.id
-                        break
+        # 2. Iteration - only sync the Week field in normal (non-FullSync) mode.
+        # In -FullSync we are importing tickets, not re-assigning them to sprints.
+        if (-not $FullSync) {
+            $sTargetIterationId = $null
+            if ($sItem.week -and $sItem.week.startDate) {
+                $sStart = [datetime]::Parse($sItem.week.startDate)
+                $midPoint = $sStart.AddDays($sItem.week.duration / 2)
+                foreach ($mIter in $mainWeekConfig) {
+                    if ($mIter.startDate) {
+                        $mStart = [datetime]::Parse($mIter.startDate)
+                        $mEnd = $mStart.AddDays($mIter.duration)
+                        if ($midPoint -ge $mStart -and $midPoint -le $mEnd) {
+                            $sTargetIterationId = $mIter.id
+                            break
+                        }
                     }
                 }
             }
-        }
-        # Fallback for current week items if time-period matching failed
-        if (-not $sTargetIterationId -and -not $sItem.isLastWeek) {
-            $sTargetIterationId = $targetIterationId
-        }
-        # Prevent iteration ping-pong: skip update if sprints start on the same day
-        if ($sTargetIterationId) {
-            $mv = if ($mItem -and $mItem.week) { $mItem.week.iterationId } else { $null }
-            $needsIterationUpdate = $true
-            if ($mv -and $mItem.week -and $mItem.week.startDate -and $sItem.week -and $sItem.week.startDate) {
-                $mItemStart = [datetime]::Parse($mItem.week.startDate)
-                $sItemStart = [datetime]::Parse($sItem.week.startDate)
-                if ($mItemStart -eq $sItemStart) { $needsIterationUpdate = $false }
+            # Fallback for current week items if time-period matching failed
+            if (-not $sTargetIterationId -and -not $sItem.isLastWeek) {
+                $sTargetIterationId = $targetIterationId
             }
-            if ($needsIterationUpdate) {
-                $u = Get-UpdateHash $mv $sTargetIterationId $mainWeekField $sTargetIterationId "--iteration-id" "Week"
-                if ($u) { $updates.Add($u) }
+            # Prevent iteration ping-pong: skip update if sprints start on the same day
+            if ($sTargetIterationId) {
+                $mv = if ($mItem -and $mItem.week) { $mItem.week.iterationId } else { $null }
+                $needsIterationUpdate = $true
+                if ($mv -and $mItem.week -and $mItem.week.startDate -and $sItem.week -and $sItem.week.startDate) {
+                    $mItemStart = [datetime]::Parse($mItem.week.startDate)
+                    $sItemStart = [datetime]::Parse($sItem.week.startDate)
+                    if ($mItemStart -eq $sItemStart) { $needsIterationUpdate = $false }
+                }
+                if ($needsIterationUpdate) {
+                    $u = Get-UpdateHash $mv $sTargetIterationId $mainWeekField $sTargetIterationId "--iteration-id" "Week"
+                    if ($u) { $updates.Add($u) }
+                }
             }
         }
         
@@ -570,8 +667,17 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                     }
                     $mainUrlMap[$url] = @{ id = $newItemId; url = $url; status = $sItem.status }
                     $boardAdded++
-                    $fieldNames = ($updates | ForEach-Object { $_.name }) -join ", "
+                    $fieldSummaries = @()
+                    foreach ($upd in $updates) {
+                        if ($upd.name -eq "Status") { $fieldSummaries += "Status: $($upd.newValue)" }
+                        else { $fieldSummaries += $upd.name }
+                    }
+                    $fieldNames = $fieldSummaries -join ", "
                     $runLog.Add("  - **[ADD]** $title$weekLabel - fields set: $fieldNames")
+                    # Record in manifest for potential rollback
+                    if ($fullSyncManifest -ne $null) {
+                        $fullSyncManifest.Add(@{ action = "add"; itemId = $newItemId; url = $url; title = $title })
+                    }
                 } else {
                     # Handle concurrent add: item may have been added between fetch and now
                     $existingItem = $mainUrlMap[$url]
@@ -593,6 +699,32 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                     Write-Host "    [DRY-RUN UPDATE] $($updates.Count) field(s): $title$weekLabel" -ForegroundColor Cyan
                 } else {
                     Write-Host "    [UPDATE] $($updates.Count) field(s): $title$weekLabel"
+                    # Capture previous state for rollback manifest before overwriting
+                    if ($fullSyncManifest -ne $null) {
+                        $prevValues = [System.Collections.Generic.List[hashtable]]::new()
+                        foreach ($upd in $updates) {
+                            switch ($upd.name) {
+                                "Status"     { $prevOptId = if ($mItem.status) { ($mainStatusField.options | Where-Object { $_.name -eq $mItem.status }).id } else { $null }
+                                               if ($prevOptId) { $prevValues.Add(@{ fieldId = $mainStatusField.id;    flag = "--single-select-option-id"; value = $prevOptId;                    clear = $false }) }
+                                               else            { $prevValues.Add(@{ fieldId = $mainStatusField.id;    clear = $true }) } }
+                                "Week"       { if ($mItem.week -and $mItem.week.iterationId) { $prevValues.Add(@{ fieldId = $mainWeekField.id;    flag = "--iteration-id";           value = $mItem.week.iterationId;    clear = $false }) }
+                                               else                                           { $prevValues.Add(@{ fieldId = $mainWeekField.id;    clear = $true }) } }
+                                "Priority"   { $prevOptId = if ($mItem.priority) { ($mainPriorityField.options | Where-Object { $_.name -eq $mItem.priority }).id } else { $null }
+                                               if ($prevOptId) { $prevValues.Add(@{ fieldId = $mainPriorityField.id; flag = "--single-select-option-id"; value = $prevOptId;                    clear = $false }) }
+                                               else            { $prevValues.Add(@{ fieldId = $mainPriorityField.id; clear = $true }) } }
+                                "Size"       { $prevOptId = if ($mItem.size) { ($mainSizeField.options | Where-Object { $_.name -eq $mItem.size }).id } else { $null }
+                                               if ($prevOptId) { $prevValues.Add(@{ fieldId = $mainSizeField.id;     flag = "--single-select-option-id"; value = $prevOptId;                    clear = $false }) }
+                                               else            { $prevValues.Add(@{ fieldId = $mainSizeField.id;     clear = $true }) } }
+                                "Estimate"   { if ($null -ne $mItem.estimate) { $prevValues.Add(@{ fieldId = $mainEstimateField.id;  flag = "--number"; value = [string]$mItem.estimate;    clear = $false }) }
+                                               else                           { $prevValues.Add(@{ fieldId = $mainEstimateField.id;  clear = $true }) } }
+                                "Start date" { if ($mItem.'start date')       { $prevValues.Add(@{ fieldId = $mainStartDateField.id; flag = "--date";   value = $mItem.'start date';         clear = $false }) }
+                                               else                           { $prevValues.Add(@{ fieldId = $mainStartDateField.id; clear = $true }) } }
+                                "End date"   { if ($mItem.'end date')         { $prevValues.Add(@{ fieldId = $mainEndDateField.id;   flag = "--date";   value = $mItem.'end date';           clear = $false }) }
+                                               else                           { $prevValues.Add(@{ fieldId = $mainEndDateField.id;   clear = $true }) } }
+                            }
+                        }
+                        $fullSyncManifest.Add(@{ action = "update"; itemId = $mItem.id; url = $url; title = $title; previousValues = @($prevValues) })
+                    }
                     foreach ($upd in $updates) {
                         $cmdArgs = @("project", "item-edit", "--id", $mItem.id, "--project-id", $mainProjId, "--field-id", $upd.fieldId)
                         if ($upd.clear) { $cmdArgs += "--clear" }
@@ -601,7 +733,12 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                     }
                 }
                 $boardUpdated++
-                $fieldNames = ($updates | ForEach-Object { $_.name }) -join ", "
+                $fieldSummaries = @()
+                foreach ($upd in $updates) {
+                    if ($upd.name -eq "Status") { $fieldSummaries += "Status: $($upd.newValue)" }
+                    else { $fieldSummaries += $upd.name }
+                }
+                $fieldNames = $fieldSummaries -join ", "
                 $runLog.Add("  - **[UPDATE]** $title$weekLabel - changed: $fieldNames")
             } else {
                 $boardSkipped++
@@ -616,6 +753,23 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
     $totalAdded += $boardAdded
     $totalUpdated += $boardUpdated
     $totalSkipped += $boardSkipped
+} # end board loop
+} finally {
+    # Save manifest here so it's always written, even if the script crashes mid-run
+    if ($fullSyncManifest -ne $null -and $fullSyncManifest.Count -gt 0) {
+        $manifestData = @{
+            timestamp   = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+            mainOrg     = $MainOrg
+            mainProjNum = $MainProjNum
+            mainProjId  = $mainProjId
+            entries     = @($fullSyncManifest)
+        }
+        $changelogDir = Join-Path $repoRoot "changelogs"
+        if (-not (Test-Path $changelogDir)) { New-Item -ItemType Directory -Path $changelogDir -Force | Out-Null }
+        $manifestData | ConvertTo-Json -Depth 10 | Set-Content -Path $manifestPath -Encoding UTF8
+        Write-Host "`n[MANIFEST] Rollback manifest saved ($($fullSyncManifest.Count) entries): $manifestPath" -ForegroundColor Magenta
+        Write-Host "[MANIFEST] To rollback, run: .\sync-boards.ps1 -RollbackFullSync" -ForegroundColor Magenta
+    }
 }
 
 # ============================================================
@@ -633,118 +787,122 @@ if ($DryRun) {
     exit 0
 }
 
-# ============================================================
-# PHASE D: Write to Changelog
-# ============================================================
-$repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
-$changelogPath = Join-Path (Join-Path $repoRoot "changelogs") "sync-boards.md"
-$changelogDir = Split-Path -Parent $changelogPath
-if (-not (Test-Path $changelogDir)) { New-Item -ItemType Directory -Path $changelogDir -Force > $null }
+if (-not $FullSync) {
+    # ============================================================
+    # PHASE D: Write to Changelog
+    # ============================================================
+    $repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
+    $changelogPath = Join-Path (Join-Path $repoRoot "changelogs") "sync-boards.md"
+    $changelogDir = Split-Path -Parent $changelogPath
+    if (-not (Test-Path $changelogDir)) { New-Item -ItemType Directory -Path $changelogDir -Force > $null }
 
-$todayStr = $today.ToString("yyyy-MM-dd")
-$timeStr = $today.ToString("hh:mm tt")
-$dateHeader = "## $todayStr"
+    $todayStr = $today.ToString("yyyy-MM-dd")
+    $timeStr = $today.ToString("hh:mm tt")
+    $dateHeader = "## $todayStr"
 
-# Build the new version entry
-$entryLines = [System.Collections.Generic.List[string]]::new()
-# Version placeholder — will be replaced after we determine the version number
-$entryLines.Add("VPLACEHOLDER")
-$entryLines.Add("")
-$entryLines.Add("| Added | Updated | Skipped |")
-$entryLines.Add("|-------|---------|---------|")
-$entryLines.Add("| $totalAdded     | $totalUpdated       | $totalSkipped       |")
-$entryLines.Add("")
-foreach ($logLine in $runLog) {
-    $entryLines.Add($logLine)
-}
-
-# Read existing changelog or create fresh
-$headerBlock = "# Sync Boards - Run Log`n"
-if (Test-Path $changelogPath) {
-    $existingContent = Get-Content -Raw $changelogPath
-} else {
-    $existingContent = $headerBlock
-}
-
-# Strip the top header if present (we'll re-add it)
-$body = $existingContent -replace "^# Sync Boards - Run Log\r?\n?", ""
-$body = $body.TrimStart("`r", "`n")
-
-# Determine version number for today
-$versionNum = 1
-if ($body -match [regex]::Escape($dateHeader)) {
-    # Count existing versions under today's date
-    $pattern = '### V(\d+)'
-    $todaySection = $body.Substring($body.IndexOf($dateHeader))
-    # Only look until the next date header or end of file
-    $nextDateMatch = [regex]::Match($todaySection.Substring($dateHeader.Length), '(?m)^## \d{4}-\d{2}-\d{2}')
-    if ($nextDateMatch.Success) {
-        $todaySection = $todaySection.Substring(0, $dateHeader.Length + $nextDateMatch.Index)
+    # Build the new version entry
+    $entryLines = [System.Collections.Generic.List[string]]::new()
+    # Version placeholder ΓÇö will be replaced after we determine the version number
+    $entryLines.Add("VPLACEHOLDER")
+    $entryLines.Add("")
+    $entryLines.Add("| Added | Updated | Skipped |")
+    $entryLines.Add("|-------|---------|---------|")
+    $entryLines.Add("| $totalAdded     | $totalUpdated       | $totalSkipped       |")
+    $entryLines.Add("")
+    foreach ($logLine in $runLog) {
+        $entryLines.Add($logLine)
     }
-    $vMatches = [regex]::Matches($todaySection, $pattern)
-    if ($vMatches.Count -gt 0) {
-        $maxV = 0
-        foreach ($vm in $vMatches) {
-            $v = [int]$vm.Groups[1].Value
-            if ($v -gt $maxV) { $maxV = $v }
+
+    # Read existing changelog or create fresh
+    $headerBlock = "# Sync Boards - Run Log`n"
+    if (Test-Path $changelogPath) {
+        $existingContent = Get-Content -Raw $changelogPath
+    } else {
+        $existingContent = $headerBlock
+    }
+
+    # Strip the top header if present (we'll re-add it)
+    $body = $existingContent -replace "^# Sync Boards - Run Log\r?\n?", ""
+    $body = $body.TrimStart("`r", "`n")
+
+    # Determine version number for today
+    $versionNum = 1
+    if ($body -match [regex]::Escape($dateHeader)) {
+        # Count existing versions under today's date
+        $pattern = '### V(\d+)'
+        $todaySection = $body.Substring($body.IndexOf($dateHeader))
+        # Only look until the next date header or end of file
+        $nextDateMatch = [regex]::Match($todaySection.Substring($dateHeader.Length), '(?m)^## \d{4}-\d{2}-\d{2}')
+        if ($nextDateMatch.Success) {
+            $todaySection = $todaySection.Substring(0, $dateHeader.Length + $nextDateMatch.Index)
         }
-        $versionNum = $maxV + 1
-    }
-}
-
-# Replace placeholder with actual version header
-$entryLines[0] = "### V$versionNum - $timeStr"
-$entryText = ($entryLines -join "`n")
-
-# Insert into the changelog
-if ($body -match [regex]::Escape($dateHeader)) {
-    # Today's date section exists — insert the new version right after the date header
-    $datePos = $body.IndexOf($dateHeader)
-    $insertPos = $datePos + $dateHeader.Length
-    $newBody = $body.Substring(0, $insertPos) + "`n`n" + $entryText + $body.Substring($insertPos)
-} else {
-    # New date — prepend a new section above everything
-    $newBody = $dateHeader + "`n`n" + $entryText + "`n`n---`n`n" + $body
-}
-
-$finalContent = $headerBlock + "`n" + $newBody.TrimEnd("`r", "`n") + "`n"
-$finalContent | Set-Content -Path $changelogPath -Encoding UTF8
-Write-Host "`n[LOG] Changelog updated: $changelogPath"
-
-# ============================================================
-# PHASE E: Changelog Cleanup (trim old entries)
-# ============================================================
-$retentionDays = if ($config.changelogRetentionDays) { $config.changelogRetentionDays } else { 14 }
-$cutoffDate = $today.AddDays(-$retentionDays).Date
-
-Write-Host "[CLEANUP] Retaining entries from last $retentionDays days (cutoff: $($cutoffDate.ToString('yyyy-MM-dd')))"
-
-$rawContent = Get-Content -Raw $changelogPath
-$header = "# Sync Boards - Run Log`n"
-$rawBody = $rawContent -replace "^# Sync Boards - Run Log\r?\n?", ""
-$rawBody = $rawBody.TrimStart("`r", "`n")
-
-# Split the body by date sections (## YYYY-MM-DD)
-$dateSections = [regex]::Split($rawBody, '(?m)(?=^## \d{4}-\d{2}-\d{2})')
-$keptSections = [System.Collections.Generic.List[string]]::new()
-
-foreach ($section in $dateSections) {
-    $section = $section.Trim()
-    if (-not $section) { continue }
-    $dateMatch = [regex]::Match($section, '^## (\d{4}-\d{2}-\d{2})')
-    if ($dateMatch.Success) {
-        $sectionDate = [datetime]::Parse($dateMatch.Groups[1].Value)
-        if ($sectionDate -ge $cutoffDate) {
-            # Strip out any trailing dividers and whitespace so they don't duplicate when joining
-            $section = $section -replace '(?s)(\s+---)+\s*$', ''
-            $keptSections.Add($section)
-        } else {
-            Write-Host "[CLEANUP] Removing entries from $($dateMatch.Groups[1].Value)"
+        $vMatches = [regex]::Matches($todaySection, $pattern)
+        if ($vMatches.Count -gt 0) {
+            $maxV = 0
+            foreach ($vm in $vMatches) {
+                $v = [int]$vm.Groups[1].Value
+                if ($v -gt $maxV) { $maxV = $v }
+            }
+            $versionNum = $maxV + 1
         }
     }
-}
 
-$cleanedBody = ($keptSections -join "`n`n---`n`n")
-$cleanedContent = $header + "`n" + $cleanedBody.TrimEnd("`r", "`n") + "`n"
-$cleanedContent | Set-Content -Path $changelogPath -Encoding UTF8
-Write-Host "[CLEANUP] Done. Kept $($keptSections.Count) date section(s)."
+    # Replace placeholder with actual version header
+    $entryLines[0] = "### V$versionNum - $timeStr"
+    $entryText = ($entryLines -join "`n")
+
+    # Insert into the changelog
+    if ($body -match [regex]::Escape($dateHeader)) {
+        # Today's date section exists ΓÇö insert the new version right after the date header
+        $datePos = $body.IndexOf($dateHeader)
+        $insertPos = $datePos + $dateHeader.Length
+        $newBody = $body.Substring(0, $insertPos) + "`n`n" + $entryText + $body.Substring($insertPos)
+    } else {
+        # New date ΓÇö prepend a new section above everything
+        $newBody = $dateHeader + "`n`n" + $entryText + "`n`n---`n`n" + $body
+    }
+
+    $finalContent = $headerBlock + "`n" + $newBody.TrimEnd("`r", "`n") + "`n"
+    $finalContent | Set-Content -Path $changelogPath -Encoding UTF8
+    Write-Host "`n[LOG] Changelog updated: $changelogPath"
+
+    # ============================================================
+    # PHASE E: Changelog Cleanup (trim old entries)
+    # ============================================================
+    $retentionDays = if ($config.changelogRetentionDays) { $config.changelogRetentionDays } else { 14 }
+    $cutoffDate = $today.AddDays(-$retentionDays).Date
+
+    Write-Host "[CLEANUP] Retaining entries from last $retentionDays days (cutoff: $($cutoffDate.ToString('yyyy-MM-dd')))"
+
+    $rawContent = Get-Content -Raw $changelogPath
+    $header = "# Sync Boards - Run Log`n"
+    $rawBody = $rawContent -replace "^# Sync Boards - Run Log\r?\n?", ""
+    $rawBody = $rawBody.TrimStart("`r", "`n")
+
+    # Split the body by date sections (## YYYY-MM-DD)
+    $dateSections = [regex]::Split($rawBody, '(?m)(?=^## \d{4}-\d{2}-\d{2})')
+    $keptSections = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($section in $dateSections) {
+        $section = $section.Trim()
+        if (-not $section) { continue }
+        $dateMatch = [regex]::Match($section, '^## (\d{4}-\d{2}-\d{2})')
+        if ($dateMatch.Success) {
+            $sectionDate = [datetime]::Parse($dateMatch.Groups[1].Value)
+            if ($sectionDate -ge $cutoffDate) {
+                # Strip out any trailing dividers and whitespace so they don't duplicate when joining
+                $section = $section -replace '(?s)(\s+---)+\s*$', ''
+                $keptSections.Add($section)
+            } else {
+                Write-Host "[CLEANUP] Removing entries from $($dateMatch.Groups[1].Value)"
+            }
+        }
+    }
+
+    $cleanedBody = ($keptSections -join "`n`n---`n`n")
+    $cleanedContent = $header + "`n" + $cleanedBody.TrimEnd("`r", "`n") + "`n"
+    $cleanedContent | Set-Content -Path $changelogPath -Encoding UTF8
+    Write-Host "[CLEANUP] Done. Kept $($keptSections.Count) date section(s)."
+} else {
+    Write-Host "`n[FULL-SYNC] Skipping changelog update and cleanup phase." -ForegroundColor Yellow
+}

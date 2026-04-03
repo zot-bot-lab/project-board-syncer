@@ -1,120 +1,123 @@
 {
-    "mainBoard":  {
-                      "org":  "team-zeroone",
-                      "projectNumber":  31,
-                      "projectId":  "PVT_kwDOA-aWxs4BFfgL"
-                  },
-    "secondaryBoards":  [
-                            {
-                                "org":  "study-reserve",
-                                "projectNumber":  2,
-                                "projectId":  "PVT_kwDOCoPJ084BFfwI",
-                                "projectName":  "StudyReserve Product Board"
-                            },
-                            {
-                                "org":  "study-reserve",
-                                "projectNumber":  5,
-                                "projectId":  "PVT_kwDOCoPJ084BFmok",
-                                "projectName":  "StudyQ Product Board"
-                            },
-                            {
-                                "org":  "GradientSymphony",
-                                "projectNumber":  6,
-                                "projectId":  "PVT_kwDOBbjh_c4AkrpL",
-                                "projectName":  "EarlyEmu - Document Generator"
-                            },
-                            {
-                                "org":  "team-zeroone",
-                                "projectNumber":  37,
-                                "projectId":  "PVT_kwDOA-aWxs4BTgL0",
-                                "projectName":  "UnbrandedLK Product Board"
-                            },
-                            {
-                                "org":  "datapolitics",
-                                "projectNumber":  2,
-                                "projectId":  "PVT_kwDOBSmzAs4BOs_M",
-                                "projectName":  "hedwige-ui-rewrite"
-                            },
-                            {
-                                "org":  "SRM-Developer",
-                                "projectNumber":  2,
-                                "projectId":  "PVT_kwHOCzlY6s4AtGop",
-                                "projectName":  "SRM Product Board"
-                            },
-                            {
-                                "org":  "Lucky-Perera",
-                                "projectNumber":  1,
-                                "projectId":  "PVT_kwHOCslWK84Ar3qT",
-                                "projectName":  "Asset Shield"
-                            },
-                            {
-                                "org":  "lexigram-tech",
-                                "projectNumber":  1,
-                                "projectId":  "PVT_kwDODDG8D84A9R5e",
-                                "projectName":  "Lexigram Product Board"
-                            },
-                            {
-                                "org":  "lexigram-tech",
-                                "projectNumber":  2,
-                                "projectId":  "PVT_kwDODDG8D84BTSqN",
-                                "projectName":  "Lexigram Marketing Board"
-                            },
-                            {
-                                "org":  "zot-internal",
-                                "projectNumber":  1,
-                                "projectId":  "PVT_kwDODgXGSs4BFl4l",
-                                "projectName":  "Medichive Product Board"
-                            },
-                            {
-                                "org":  "zot-internal",
-                                "projectNumber":  2,
-                                "projectId":  "PVT_kwDODgXGSs4BF_Sk",
-                                "projectName":  "Zotizens Product Board"
-                            },
-                            {
-                                "org":  "zot-internal",
-                                "projectNumber":  3,
-                                "projectId":  "PVT_kwDODgXGSs4BOE0t",
-                                "projectName":  "BYM Project Board"
-                            },
-                            {
-                                "org":  "zot-internal",
-                                "projectNumber":  4,
-                                "projectId":  "PVT_kwDODgXGSs4BPlHI",
-                                "projectName":  "QueueUp Product Board"
-                            },
-                            {
-                                "org":  "zot-internal",
-                                "projectNumber":  5,
-                                "projectId":  "PVT_kwDODgXGSs4BQMyX",
-                                "projectName":  "Invoyze Product Board"
-                            },
-                            {
-                                "org":  "zot-internal",
-                                "projectNumber":  7,
-                                "projectId":  "PVT_kwDODgXGSs4BQod8",
-                                "projectName":  "Yanthra Product project"
-                            },
-                            {
-                                "org":  "team-zeroone",
-                                "projectNumber":  34,
-                                "projectId":  "PVT_kwDOA-aWxs4BGtb2",
-                                "projectName":  "ZOT Sales Board"
-                            },
-                            {
-                                "org":  "team-zeroone",
-                                "projectNumber":  32,
-                                "projectId":  "PVT_kwDOA-aWxs4BFnT_",
-                                "projectName":  "ZOT Marketing Board"
-                            }
-                        ],
-    "validStatuses":  [
-                          "Ready",
-                          "In progress",
-                          "In review",
-                          "Done",
-                          "Blocked",
-                          "Discarded"
-                      ],
-    "changelogRetentionDays":  14
+    "mainBoard": {
+        "org": "team-zeroone",
+        "projectNumber": 31,
+        "projectId": "PVT_kwDOA-aWxs4BFfgL"
+    },
+    "secondaryBoards": [
+        {
+            "org": "study-reserve",
+            "projectNumber": 2,
+            "projectId": "PVT_kwDOCoPJ084BFfwI",
+            "projectName": "StudyReserve Product Board"
+        },
+        {
+            "org": "study-reserve",
+            "projectNumber": 5,
+            "projectId": "PVT_kwDOCoPJ084BFmok",
+            "projectName": "StudyQ Product Board"
+        },
+        {
+            "org": "GradientSymphony",
+            "projectNumber": 6,
+            "projectId": "PVT_kwDOBbjh_c4AkrpL",
+            "projectName": "EarlyEmu - Document Generator"
+        },
+        {
+            "org": "team-zeroone",
+            "projectNumber": 37,
+            "projectId": "PVT_kwDOA-aWxs4BTgL0",
+            "projectName": "UnbrandedLK Product Board"
+        },
+        {
+            "org": "datapolitics",
+            "projectNumber": 2,
+            "projectId": "PVT_kwDOBSmzAs4BOs_M",
+            "projectName": "hedwige-ui-rewrite"
+        },
+        {
+            "org": "SRM-Developer",
+            "projectNumber": 2,
+            "projectId": "PVT_kwHOCzlY6s4AtGop",
+            "projectName": "SRM Product Board"
+        },
+        {
+            "org": "Lucky-Perera",
+            "projectNumber": 1,
+            "projectId": "PVT_kwHOCslWK84Ar3qT",
+            "projectName": "Asset Shield"
+        },
+        {
+            "org": "lexigram-tech",
+            "projectNumber": 1,
+            "projectId": "PVT_kwDODDG8D84A9R5e",
+            "projectName": "Lexigram Product Board"
+        },
+        {
+            "org": "lexigram-tech",
+            "projectNumber": 2,
+            "projectId": "PVT_kwDODDG8D84BTSqN",
+            "projectName": "Lexigram Marketing Board"
+        },
+        {
+            "org": "zot-internal",
+            "projectNumber": 1,
+            "projectId": "PVT_kwDODgXGSs4BFl4l",
+            "projectName": "Medichive Product Board"
+        },
+        {
+            "org": "zot-internal",
+            "projectNumber": 2,
+            "projectId": "PVT_kwDODgXGSs4BF_Sk",
+            "projectName": "Zotizens Product Board"
+        },
+        {
+            "org": "zot-internal",
+            "projectNumber": 3,
+            "projectId": "PVT_kwDODgXGSs4BOE0t",
+            "projectName": "BYM Project Board"
+        },
+        {
+            "org": "zot-internal",
+            "projectNumber": 4,
+            "projectId": "PVT_kwDODgXGSs4BPlHI",
+            "projectName": "QueueUp Product Board"
+        },
+        {
+            "org": "zot-internal",
+            "projectNumber": 5,
+            "projectId": "PVT_kwDODgXGSs4BQMyX",
+            "projectName": "Invoyze Product Board"
+        },
+        {
+            "org": "zot-internal",
+            "projectNumber": 7,
+            "projectId": "PVT_kwDODgXGSs4BQod8",
+            "projectName": "Yanthra Product project"
+        },
+        {
+            "org": "team-zeroone",
+            "projectNumber": 34,
+            "projectId": "PVT_kwDOA-aWxs4BGtb2",
+            "projectName": "ZOT Sales Board"
+        },
+        {
+            "org": "team-zeroone",
+            "projectNumber": 32,
+            "projectId": "PVT_kwDOA-aWxs4BFnT_",
+            "projectName": "ZOT Marketing Board"
+        }
+    ],
+    "validStatuses": [
+        "Backlog",
+        "Ready",
+        "In progress",
+        "In review",
+        "Done",
+        "Recurring",
+        "On Hold",
+        "Blocked",
+        "Discarded"
+    ],
+    "changelogRetentionDays": 14
 }
