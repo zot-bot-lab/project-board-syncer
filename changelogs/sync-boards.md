@@ -2,6 +2,62 @@
 
 ## 2026-04-07
 
+### V2 - 05:36 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 0     | 6       | 1321       |
+
+
+#### StudyReserve Product Board - +0 added, ~5 updated, =197 skipped
+  - **[UPDATE]** Unable to sort enrollments in admin. - changed: Status: In review, Start date, End date
+  - **[UPDATE]** cannot see pending enrollments separately - changed: Status: In review, Start date, End date
+  - **[UPDATE]** cannot see who has recently enrolled (according to date) - changed: Status: In review, Start date, End date
+  - **[UPDATE]** enrollments shown from the beginning . To find a recent one have to keep scrolling to the very last. - changed: Status: In review, Start date, End date
+  - **[UPDATE]** cannot search courses using sirs names. - changed: Status: In review, Start date, End date
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =619 skipped
+
+#### UnbrandedLK Product Board - +0 added, ~0 updated, =44 skipped
+
+#### hedwige-ui-rewrite - +0 added, ~1 updated, =102 skipped
+  - **[UPDATE]** 1.8.4: Alert creation components (alertCreate, alertCreateAdvanced) (week 7) - changed: Status: In review
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - +0 added, ~0 updated, =306 skipped
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - Skipped
+*No items found in the current week.*
+
+#### QueueUp Product Board - +0 added, ~0 updated, =16 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - +0 added, ~0 updated, =12 skipped
+
+#### ZOT Sales Board - +0 added, ~0 updated, =25 skipped
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
 ### V1 - 12:19 PM
 
 | Added | Updated | Skipped |
