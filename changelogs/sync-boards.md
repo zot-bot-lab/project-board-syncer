@@ -1,5 +1,63 @@
 # Sync Boards - Run Log
 
+## 2026-04-16
+
+### V1 - 12:37 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 2     | 1       | 860       |
+
+
+#### StudyReserve Product Board - Skipped
+*No items found in the current week.*
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =624 skipped
+
+#### UnbrandedLK Product Board - +0 added, ~0 updated, =45 skipped
+
+#### hedwige-ui-rewrite - +0 added, ~0 updated, =106 skipped
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - +0 added, ~0 updated, =29 skipped
+
+#### QueueUp Product Board - +0 added, ~0 updated, =18 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - +1 added, ~0 updated, =14 skipped
+  - **[ADD]** add footer to working links - fields set: Status: In progress, Week, Start date, End date
+
+#### ZOT Sales Board - +1 added, ~1 updated, =24 skipped
+  - **[UPDATE]** Add people to the Agency - changed: Week
+  - **[ADD]** [AU][NETWORK] Transport Management System Proposal (last week) - fields set: Status: Backlog, Week, Start date, End date
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+---
+
 ## 2026-04-15
 
 ### V2 - 05:38 PM
@@ -1156,107 +1214,6 @@
 
 #### Yanthra Product project - +0 added, ~1 updated, =4 skipped
   - **[UPDATE]** Implement forgot password  page - changed: Status
-
-#### ZOT Sales Board - +0 added, ~0 updated, =2 skipped
-
-#### ZOT Marketing Board - Skipped
-*No items found in the current week.*
-
----
-
-## 2026-04-01
-
-### V2 - 05:36 PM
-
-| Added | Updated | Skipped |
-|-------|---------|---------|
-| 0     | 0       | 57       |
-
-
-#### StudyReserve Product Board - +0 added, ~0 updated, =10 skipped
-
-#### StudyQ Product Board - Skipped
-*No items found in the current week.*
-
-#### EarlyEmu - Document Generator - +0 added, ~0 updated, =11 skipped
-
-#### hedwige-ui-rewrite - +0 added, ~0 updated, =16 skipped
-
-#### SRM Product Board - Skipped
-*No items found in the current week.*
-
-#### Asset Shield - +0 added, ~0 updated, =2 skipped
-
-#### Lexigram Product Board - +0 added, ~0 updated, =1 skipped
-
-#### Lexigram Marketing Board - +0 added, ~0 updated, =3 skipped
-
-#### Medichive Product Board - Skipped
-*No items found in the current week.*
-
-#### Zotizens Product Board - Skipped
-*No items found in the current week.*
-
-#### BYM Project Board - Skipped
-*No items found in the current week.*
-
-#### QueueUp Product Board - +0 added, ~0 updated, =7 skipped
-
-#### Invoyze Product Board - Skipped
-*No items found in the current week.*
-
-#### Yanthra Product project - +0 added, ~0 updated, =5 skipped
-
-#### ZOT Sales Board - +0 added, ~0 updated, =2 skipped
-
-#### ZOT Marketing Board - Skipped
-*No items found in the current week.*
-
-### V1 - 12:26 PM
-
-| Added | Updated | Skipped |
-|-------|---------|---------|
-| 2     | 3       | 52       |
-
-
-#### StudyReserve Product Board - +0 added, ~0 updated, =10 skipped
-
-#### StudyQ Product Board - Skipped
-*No items found in the current week.*
-
-#### EarlyEmu - Document Generator - +0 added, ~0 updated, =11 skipped
-
-#### hedwige-ui-rewrite - +2 added, ~3 updated, =11 skipped
-  - **[UPDATE]** 1.12.2: Kanban board (3 components + @dnd-kit) (week 5) - changed: Status
-  - **[UPDATE]** 1.13.1: Signal board page (week 6) - changed: Status
-  - **[UPDATE]** 1.13.2: Signal board popin (week 6) - changed: Status
-  - **[ADD]** 1.13.3: Report modals (week 6) - fields set: Status, Week
-  - **[ADD]** 1.13.4: Stats sidebar + Add perimeter modal (week 6) - fields set: Status, Week
-
-#### SRM Product Board - Skipped
-*No items found in the current week.*
-
-#### Asset Shield - +0 added, ~0 updated, =2 skipped
-
-#### Lexigram Product Board - +0 added, ~0 updated, =1 skipped
-
-#### Lexigram Marketing Board - +0 added, ~0 updated, =3 skipped
-
-#### Medichive Product Board - Skipped
-*No items found in the current week.*
-
-#### Zotizens Product Board - Skipped
-*No items found in the current week.*
-
-#### BYM Project Board - Skipped
-*No items found in the current week.*
-
-#### QueueUp Product Board - +0 added, ~0 updated, =7 skipped
-
-#### Invoyze Product Board - Skipped
-*No items found in the current week.*
-
-#### Yanthra Product project - +0 added, ~0 updated, =5 skipped
 
 #### ZOT Sales Board - +0 added, ~0 updated, =2 skipped
 
