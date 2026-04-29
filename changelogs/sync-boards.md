@@ -2,6 +2,61 @@
 
 ## 2026-04-29
 
+### V2 - 06:29 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 0     | 2       | 1113       |
+
+
+#### StudyReserve Product Board - +0 added, ~1 updated, =212 skipped
+  - **[UPDATE]** [Bug] Student device connectivity data is not visible on the manager's dashboard. - changed: Status: In review
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +0 added, ~1 updated, =647 skipped
+  - **[UPDATE]** Automatic document draft generation planning - changed: Status: In progress, Week
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - +0 added, ~0 updated, =110 skipped
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - +0 added, ~0 updated, =35 skipped
+
+#### QueueUp Product Board - +0 added, ~0 updated, =22 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - +0 added, ~0 updated, =36 skipped
+
+#### ZOT Web V6 Product Board - +0 added, ~0 updated, =20 skipped
+
+#### ZOT Sales Board - +0 added, ~0 updated, =31 skipped
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
 ### V1 - 01:06 PM
 
 | Added | Updated | Skipped |
