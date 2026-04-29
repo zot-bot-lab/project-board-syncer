@@ -1,5 +1,66 @@
 # Sync Boards - Run Log
 
+## 2026-04-29
+
+### V1 - 01:06 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 2     | 2       | 1111       |
+
+
+#### StudyReserve Product Board - +0 added, ~0 updated, =213 skipped
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +1 added, ~1 updated, =646 skipped
+  - **[UPDATE]** Fix mobile responsive issues - changed: Status: In review, Week, End date
+  - **[ADD]** Replace gpt-4-turbo-preview model - fields set: Status: In progress, Week
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - +0 added, ~0 updated, =110 skipped
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - +1 added, ~0 updated, =34 skipped
+  - **[ADD]** Dark / Light Mode — System-Adaptive Theming - fields set: Status: In progress, Week, Start date, End date
+
+#### QueueUp Product Board - +0 added, ~0 updated, =22 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - +0 added, ~0 updated, =36 skipped
+
+#### ZOT Web V6 Product Board - +0 added, ~1 updated, =19 skipped
+  - **[UPDATE]** Adding Apply form in the careers page - changed: Status: In review
+
+#### ZOT Sales Board - +0 added, ~0 updated, =31 skipped
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+---
+
 ## 2026-04-28
 
 ### V2 - 06:32 PM
@@ -1232,126 +1293,6 @@
 #### QueueUp Product Board - +2 added, ~0 updated, =16 skipped
   - **[ADD]** [TEST] Writing Unit Tests for the backend Code. - fields set: Status: In progress, Week, Start date, End date
   - **[ADD]** UI Improvements - fields set: Status: Ready, Week, Start date, End date
-
-#### Invoyze Product Board - Skipped
-*No items found in the current week.*
-
-#### Yanthra Product project - Skipped
-*No items found in the current week.*
-
-#### ZOT Sales Board - Skipped
-*No items found in the current week.*
-
-#### ZOT Marketing Board - Skipped
-*No items found in the current week.*
-
----
-
-## 2026-04-14
-
-### V2 - 05:41 PM
-
-| Added | Updated | Skipped |
-|-------|---------|---------|
-| 0     | 0       | 0       |
-
-
-#### StudyReserve Product Board - Skipped
-*No items found in the current week.*
-
-#### StudyQ Product Board - Skipped
-*No items found in the current week.*
-
-#### EarlyEmu - Document Generator - Skipped
-*No items found in the current week.*
-
-#### UnbrandedLK Product Board - Skipped
-*No items found in the current week.*
-
-#### hedwige-ui-rewrite - Skipped
-*No items found in the current week.*
-
-#### SRM Product Board - Skipped
-*No items found in the current week.*
-
-#### Asset Shield - Skipped
-*No items found in the current week.*
-
-#### Lexigram Product Board - Skipped
-*No items found in the current week.*
-
-#### Lexigram Marketing Board - Skipped
-*No items found in the current week.*
-
-#### Medichive Product Board - Skipped
-*No items found in the current week.*
-
-#### Zotizens Product Board - Skipped
-*No items found in the current week.*
-
-#### BYM Project Board - Skipped
-*No items found in the current week.*
-
-#### QueueUp Product Board - Skipped
-*No items found in the current week.*
-
-#### Invoyze Product Board - Skipped
-*No items found in the current week.*
-
-#### Yanthra Product project - Skipped
-*No items found in the current week.*
-
-#### ZOT Sales Board - Skipped
-*No items found in the current week.*
-
-#### ZOT Marketing Board - Skipped
-*No items found in the current week.*
-
-### V1 - 12:34 PM
-
-| Added | Updated | Skipped |
-|-------|---------|---------|
-| 0     | 0       | 0       |
-
-
-#### StudyReserve Product Board - Skipped
-*No items found in the current week.*
-
-#### StudyQ Product Board - Skipped
-*No items found in the current week.*
-
-#### EarlyEmu - Document Generator - Skipped
-*No items found in the current week.*
-
-#### UnbrandedLK Product Board - Skipped
-*No items found in the current week.*
-
-#### hedwige-ui-rewrite - Skipped
-*No items found in the current week.*
-
-#### SRM Product Board - Skipped
-*No items found in the current week.*
-
-#### Asset Shield - Skipped
-*No items found in the current week.*
-
-#### Lexigram Product Board - Skipped
-*No items found in the current week.*
-
-#### Lexigram Marketing Board - Skipped
-*No items found in the current week.*
-
-#### Medichive Product Board - Skipped
-*No items found in the current week.*
-
-#### Zotizens Product Board - Skipped
-*No items found in the current week.*
-
-#### BYM Project Board - Skipped
-*No items found in the current week.*
-
-#### QueueUp Product Board - Skipped
-*No items found in the current week.*
 
 #### Invoyze Product Board - Skipped
 *No items found in the current week.*
