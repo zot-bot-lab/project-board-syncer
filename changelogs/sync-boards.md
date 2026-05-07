@@ -1,5 +1,69 @@
 # Sync Boards - Run Log
 
+## 2026-05-07
+
+### V1 - 01:30 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 2     | 5       | 1181       |
+
+
+#### StudyReserve Product Board - +0 added, ~1 updated, =214 skipped
+  - **[UPDATE]** Introduce theme files to student-app and the admin-app - changed: Status: In review
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +1 added, ~0 updated, =651 skipped
+  - **[ADD]** Automatic document draft generation - fields set: Status: In progress, Week
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - +0 added, ~2 updated, =108 skipped
+  - **[UPDATE]** 2.1.3: Full integration testing (week 9-10) - changed: Status: In progress
+  - **[UPDATE]** 2.1.4: E2E test suite (week 9-10) - changed: Status: In progress
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - +0 added, ~1 updated, =74 skipped
+  - **[UPDATE]** Move zotech email service from Sendgrid to brevo - changed: Status: Backlog
+
+#### BYM Project Board - +0 added, ~0 updated, =36 skipped
+
+#### QueueUp Product Board - +1 added, ~0 updated, =27 skipped
+  - **[ADD]** QueueUp Analytics Erorr Fix - fields set: Status: Done, Week, Start date, End date
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - +0 added, ~0 updated, =41 skipped
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - +0 added, ~1 updated, =30 skipped
+  - **[UPDATE]** [Strategy] Upselling Plan - changed: Week
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+---
+
 ## 2026-05-06
 
 ### V2 - 06:38 PM
@@ -1267,119 +1331,6 @@
 *No items found in the current week.*
 
 #### Yanthra Product project - +0 added, ~0 updated, =26 skipped
-
-#### ZOT Sales Board - +0 added, ~0 updated, =27 skipped
-
-#### ZOT Marketing Board - Skipped
-*No items found in the current week.*
-
----
-
-## 2026-04-22
-
-### V2 - 05:41 PM
-
-| Added | Updated | Skipped |
-|-------|---------|---------|
-| 0     | 0       | 883       |
-
-
-#### StudyReserve Product Board - Skipped
-*No items found in the current week.*
-
-#### StudyQ Product Board - Skipped
-*No items found in the current week.*
-
-#### EarlyEmu - Document Generator - +0 added, ~0 updated, =628 skipped
-
-#### UnbrandedLK Product Board - +0 added, ~0 updated, =47 skipped
-
-#### hedwige-ui-rewrite - +0 added, ~0 updated, =107 skipped
-
-#### SRM Product Board - Skipped
-*No items found in the current week.*
-
-#### Asset Shield - Skipped
-*No items found in the current week.*
-
-#### Lexigram Product Board - Skipped
-*No items found in the current week.*
-
-#### Lexigram Marketing Board - Skipped
-*No items found in the current week.*
-
-#### Medichive Product Board - Skipped
-*No items found in the current week.*
-
-#### Zotizens Product Board - Skipped
-*No items found in the current week.*
-
-#### BYM Project Board - +0 added, ~0 updated, =29 skipped
-
-#### QueueUp Product Board - +0 added, ~0 updated, =19 skipped
-
-#### Invoyze Product Board - Skipped
-*No items found in the current week.*
-
-#### Yanthra Product project - +0 added, ~0 updated, =26 skipped
-
-#### ZOT Sales Board - +0 added, ~0 updated, =27 skipped
-
-#### ZOT Marketing Board - Skipped
-*No items found in the current week.*
-
-### V1 - 12:39 PM
-
-| Added | Updated | Skipped |
-|-------|---------|---------|
-| 2     | 5       | 876       |
-
-
-#### StudyReserve Product Board - Skipped
-*No items found in the current week.*
-
-#### StudyQ Product Board - Skipped
-*No items found in the current week.*
-
-#### EarlyEmu - Document Generator - +2 added, ~2 updated, =624 skipped
-  - **[UPDATE]** Summarize V3 profile - changed: Week
-  - **[UPDATE]** Optimize paraphrase - changed: Week
-  - **[ADD]** Free tools - allow every new user generate a document for free - fields set: Status: Ready, Week
-  - **[ADD]** Research: Karpathy's LLM Wiki - fields set: Status: In progress, Week
-
-#### UnbrandedLK Product Board - +0 added, ~1 updated, =46 skipped
-  - **[UPDATE]** [Eclipse Che] Fix: IDE won't startup - changed: Start date, End date
-
-#### hedwige-ui-rewrite - +0 added, ~0 updated, =107 skipped
-
-#### SRM Product Board - Skipped
-*No items found in the current week.*
-
-#### Asset Shield - Skipped
-*No items found in the current week.*
-
-#### Lexigram Product Board - Skipped
-*No items found in the current week.*
-
-#### Lexigram Marketing Board - Skipped
-*No items found in the current week.*
-
-#### Medichive Product Board - Skipped
-*No items found in the current week.*
-
-#### Zotizens Product Board - Skipped
-*No items found in the current week.*
-
-#### BYM Project Board - +0 added, ~0 updated, =29 skipped
-
-#### QueueUp Product Board - +0 added, ~1 updated, =18 skipped
-  - **[UPDATE]** [FEATURE] Join to the queue using QR. - changed: Status: In progress
-
-#### Invoyze Product Board - Skipped
-*No items found in the current week.*
-
-#### Yanthra Product project - +0 added, ~1 updated, =25 skipped
-  - **[UPDATE]** bug/fix home search box - changed: Status: In progress
 
 #### ZOT Sales Board - +0 added, ~0 updated, =27 skipped
 
