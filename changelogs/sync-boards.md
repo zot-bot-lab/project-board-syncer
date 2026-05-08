@@ -2,6 +2,61 @@
 
 ## 2026-05-08
 
+### V2 - 06:20 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 0     | 0       | 1217       |
+
+
+#### StudyReserve Product Board - +0 added, ~0 updated, =218 skipped
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =663 skipped
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - +0 added, ~0 updated, =110 skipped
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - +0 added, ~0 updated, =78 skipped
+
+#### BYM Project Board - +0 added, ~0 updated, =36 skipped
+
+#### QueueUp Product Board - +0 added, ~0 updated, =29 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### JIT Plastics Product Board - +0 added, ~0 updated, =4 skipped
+
+#### Yanthra Product project - +0 added, ~0 updated, =48 skipped
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - +0 added, ~0 updated, =31 skipped
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
 ### V1 - 12:30 PM
 
 | Added | Updated | Skipped |
