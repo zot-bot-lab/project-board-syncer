@@ -2,6 +2,66 @@
 
 ## 2026-05-28
 
+### V2 - 12:00 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 0     | 1       | 1117       |
+
+
+#### StudyReserve Product Board - +0 added, ~0 updated, =219 skipped
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =681 skipped
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - Skipped
+*No items found in the current week.*
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - +0 added, ~0 updated, =78 skipped
+
+#### BYM Project Board - +0 added, ~0 updated, =37 skipped
+
+#### QueueUp Product Board - +0 added, ~1 updated, =30 skipped
+  - **[UPDATE]** Adding Location Selector for the customer discover page. - changed: Status: Backlog
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### JIT Plastics Product Board - +0 added, ~0 updated, =16 skipped
+
+#### Yanthra Product project - +0 added, ~0 updated, =54 skipped
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+#### SL Drive Product Board - +0 added, ~0 updated, =2 skipped
+
 ### V1 - 11:00 AM
 
 | Added | Updated | Skipped |
