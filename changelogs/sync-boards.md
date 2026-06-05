@@ -2,6 +2,89 @@
 
 ## 2026-06-05
 
+### V7 - 03:00 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 19     | 0       | 462       |
+
+
+#### StudyReserve Product Board - Skipped
+*No items found in the current week.*
+
+#### StudyQ Product Board - +1 added, ~0 updated, =30 skipped
+  - **[ADD]** Add option for an author to add a list of whitelist emails to able to buy bundles for free - fields set: Status: In review, Week, Start date, End date
+
+#### EarlyEmu - Document Generator - +6 added, ~0 updated, =409 skipped
+  - **[ADD]** Research: DeepSeek v4 migration - fields set: Status: In progress, Week
+  - **[ADD]** Improve fact check result source citations (last week) - fields set: Status: Done, Week
+  - **[ADD]** Refactor agents structure (last week) - fields set: Status: Done, Week
+  - **[ADD]** Redirect effortagent.com to /free-tools (last week) - fields set: Status: Done, Week
+  - **[ADD]** Implement interactive feature tutorial & onboarding analytics (last week) - fields set: Status: In review, Week, End date
+  - **[ADD]** Free fact checker - minor changes - 05/22 (last week) - fields set: Status: Done, Week
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - Skipped
+*No items found in the current week.*
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - Skipped
+*No items found in the current week.*
+
+#### QueueUp Product Board - +4 added, ~0 updated, =14 skipped
+  - **[ADD]** Replace SMTP email delivery with an external email service for Render deployment - fields set: Status: Done, Week
+  - **[ADD]** Adding Location Selector for the customer discover page. (last week) - fields set: Status: Backlog, Week
+  - **[ADD]** Using Cloudinary for the file Upload Feature - fields set: Status: In progress, Week
+  - **[ADD]** Creating the guest flow - fields set: Status: In progress, Week
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### JIT Plastics Product Board - Skipped
+*No items found in the current week.*
+  - **[ADD]** create client reach excel sheet (last week) - fields set: Status: Done, Week, Start date, End date
+
+#### Yanthra Product project - +5 added, ~0 updated, =9 skipped
+  - **[ADD]** create call structure (last week) - fields set: Status: Done, Week, Start date, End date
+  - **[ADD]** add feature to listing can create using any language - fields set: Status: Done, Week, Start date, End date
+  - **[ADD]** create add category  part inactive and active - fields set: Status: Backlog, Week, Start date, End date
+  - **[ADD]** creating presentation for yanthra - fields set: Status: Done, Week, Start date, End date
+  - **[FAIL]** Could not add: add and fix email and password cant change to seller in profile
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+  - **[ADD]** Research the designing of the landing page  (last week) - fields set: Status: Done, Week
+
+#### SL Drive Product Board - +3 added, ~0 updated, =0 skipped
+  - **[ADD]** Driver registration & onboarding - fields set: Status: In Progress, Week
+  - **[ADD]** building landing page (last week) - fields set: Status: Done, Week
+  - **[FAIL]** Could not add: Tourist onboarding
+
 ### V6 - 02:00 PM
 
 | Added | Updated | Skipped |
