@@ -2,6 +2,74 @@
 
 ## 2026-06-08
 
+### V2 - 10:00 AM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 1     | 4       | 320       |
+
+
+#### StudyReserve Product Board - +0 added, ~1 updated, =219 skipped
+  - **[UPDATE]** Option to download all the users in the system to a csv - changed: Status: Ready, Week, Start date, End date
+
+#### StudyQ Product Board - +0 added, ~1 updated, =38 skipped
+  - **[UPDATE]** Add an option to add already created question to a group - changed: Status: Ready, Week
+
+#### EarlyEmu - Document Generator - Skipped
+*No items found in the current week.*
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - Skipped
+*No items found in the current week.*
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - Skipped
+*No items found in the current week.*
+
+#### QueueUp Product Board - Skipped
+*No items found in the current week.*
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### JIT Plastics Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - +1 added, ~0 updated, =60 skipped
+  - **[ADD]** add admin to create  add to the items to seller from admin side - fields set: Status: Backlog, Week
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+#### SL Drive Product Board - +0 added, ~2 updated, =3 skipped
+  - **[UPDATE]** Driver registration & onboarding - changed: Week
+  - **[UPDATE]** Tourist onboarding - changed: Week
+
 ### V1 - 09:00 AM
 
 | Added | Updated | Skipped |
