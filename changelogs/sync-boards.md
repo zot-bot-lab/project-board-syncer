@@ -2,6 +2,77 @@
 
 ## 2026-06-16
 
+### V5 - 01:00 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 1     | 8       | 815       |
+
+
+#### StudyReserve Product Board - Skipped
+*No items found in the current week.*
+
+#### StudyQ Product Board - +0 added, ~6 updated, =38 skipped
+  - **[UPDATE]** Add option for an author to add a list of whitelist emails to able to buy bundles for free - changed: Status: In review
+  - **[UPDATE]** Add an option to add already created question to a group - changed: Week
+  - **[UPDATE]** Integrate AI bundler into app and discard custom ui - changed: Week
+  - **[UPDATE]** Improve questions manager : performance, filtering, sorting, server side pagination and filtering - changed: Week
+  - **[UPDATE]** Fix file upload issue on web app (last week) - changed: Week
+  - **[UPDATE]** Create and use auto generated api spec in admin and app - changed: Status: In review, Week
+
+#### EarlyEmu - Document Generator - +1 added, ~2 updated, =693 skipped
+  - **[UPDATE]** Implement interactive feature tutorial & onboarding analytics - changed: Week
+  - **[UPDATE]** Feedback changes - 06/10 - changed: Week
+  - **[ADD]** Capture free-tool input for draft generation - fields set: Status: In progress, Week
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - Skipped
+*No items found in the current week.*
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - +0 added, ~0 updated, =42 skipped
+
+#### QueueUp Product Board - +0 added, ~0 updated, =34 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### JIT Plastics Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - Skipped
+*No items found in the current week.*
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+#### SL Drive Product Board - +0 added, ~0 updated, =8 skipped
+
 ### V4 - 12:00 PM
 
 | Added | Updated | Skipped |
