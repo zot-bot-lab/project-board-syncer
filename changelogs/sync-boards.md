@@ -2,6 +2,69 @@
 
 ## 2026-06-17
 
+### V8 - 04:00 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 0     | 1       | 823       |
+
+
+#### StudyReserve Product Board - Skipped
+*No items found in the current week.*
+
+#### StudyQ Product Board - +0 added, ~1 updated, =43 skipped
+  - **[UPDATE]** Integrate AI bundler into app and discard custom ui (langflow) - changed: Status: In progress
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =696 skipped
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### hedwige-ui-rewrite - Skipped
+*No items found in the current week.*
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - +0 added, ~0 updated, =42 skipped
+
+#### QueueUp Product Board - +0 added, ~0 updated, =34 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### JIT Plastics Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - Skipped
+*No items found in the current week.*
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+#### SL Drive Product Board - +0 added, ~0 updated, =8 skipped
+
 ### V7 - 03:00 PM
 
 | Added | Updated | Skipped |
