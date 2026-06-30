@@ -2,6 +2,81 @@
 
 ## 2026-06-30
 
+### V8 - 05:37 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 5     | 0       | 727       |
+
+
+#### StudyReserve Product Board - Skipped
+*No items found in the current week.*
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =713 skipped
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### Assetshield Project Board - Internal - +5 added, ~0 updated, =0 skipped
+  - **[ADD]** M0 — Test Harness + Enforcement Gates (last week) - fields set: Status: Done, Week, Size
+  - **[ADD]** M1 — Auth, RBAC & CRUD/Query Framework (last week) - fields set: Status: Done, Week, Size
+  - **[ADD]** M2 — Core Entity Modules + Codegen Pipeline + packages/domain (RBI) - fields set: Status: In progress, Week, Size
+  - **[ADD]** M3 — Engineering Modules (ThicknessAnalysis, IOW, Inspection Lifecycle) - fields set: Status: Ready, Week, Size
+  - **[ADD]** M4 — Files + AI Platform (Behind Adapters) - fields set: Status: Ready, Week, Size
+
+#### hedwige-ui-rewrite - Skipped
+*No items found in the current week.*
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - Skipped
+*No items found in the current week.*
+
+#### QueueUp Product Board - Skipped
+*No items found in the current week.*
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### JIT Plastics Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - Skipped
+*No items found in the current week.*
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+#### SL Drive Product Board - +0 added, ~0 updated, =14 skipped
+
+#### BespokeBuilds Board - Skipped
+*No items found in the current week.*
+
 ### V7 - 03:00 PM
 
 | Added | Updated | Skipped |

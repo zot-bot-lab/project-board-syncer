@@ -31,7 +31,9 @@
     },
     {
       "org": "team-zeroone",
-      "projectNumber": 42
+      "projectNumber": 42,
+      "projectId": "PVT_kwDOA-aWxs4BcD8n",
+      "projectName": "Assetshield Project Board - Internal"
     },
     {
       "org": "datapolitics",
@@ -131,7 +133,9 @@
     },
     {
       "org": "bespoke-builds",
-      "projectNumber": 1
+      "projectNumber": 1,
+      "projectId": "PVT_kwDOETKGI84BcD3M",
+      "projectName": "BespokeBuilds Board"
     }
   ],
   "validStatuses": [
