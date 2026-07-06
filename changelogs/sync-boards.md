@@ -2,6 +2,84 @@
 
 ## 2026-07-06
 
+### V8 - 08:52 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 10     | 0       | 773       |
+
+
+#### StudyReserve Product Board - Skipped
+*No items found in the current week.*
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =716 skipped
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### Assetshield Project Board - Internal - +0 added, ~0 updated, =5 skipped
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Asset Shield - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Hedwige-crawling - +10 added, ~0 updated, =0 skipped
+  - **[ADD]** [P1] Obtain Zyte API and AWS S3 credentials - Week 1 (last week) - fields set: Status: Done, Week
+  - **[ADD]** [P1] Initialize Scrapy project - Week 1 (last week) - fields set: Status: Done, Week
+  - **[ADD]** [P1] Base collector - Week 1 (last week) - fields set: Status: In Review, Week
+  - **[ADD]** [P1] L'Île-Saint-Denis page (WordPress JSON) - Week 1 (last week) - fields set: Status: In Review, Week
+  - **[ADD]** [P1] Limoges Webdelib+ (DelibPlus) - Week 2 (last week) - fields set: Status: In Review, Week
+  - **[ADD]** [P1] Saint-Denis Webdelib+ (DelibPlus) - Week 2 (last week) - fields set: Status: In Review, Week
+  - **[ADD]** [P1] Deux-Sèvres Portal (Form-Based Portal) - Week 2 - fields set: Status: Ready, Week
+  - **[ADD]** [P1] Hauts-de-France Portal (Form-Based Portal) - Week 2 - fields set: Status: In Progress, Week
+  - **[ADD]** [P1] Estérel Côte d'Azur (Form-Based Portal) - Week 2 - fields set: Status: Ready, Week
+  - **[ADD]** [P1] Paris Terres d'Envol (Form-Based Portal) - Week 2 - fields set: Status: Ready, Week
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - Skipped
+*No items found in the current week.*
+
+#### QueueUp Product Board - +0 added, ~0 updated, =35 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### JIT Plastics Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - Skipped
+*No items found in the current week.*
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+#### SL Drive Product Board - +0 added, ~0 updated, =17 skipped
+
+#### BespokeBuilds Board - Skipped
+*No items found in the current week.*
+
 ### V7 - 06:00 PM
 
 | Added | Updated | Skipped |
