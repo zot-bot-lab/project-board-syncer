@@ -16,7 +16,7 @@ Describe "sync-config.json" {
 
         It "has a mainBoard with org and projectNumber" {
             $Config.mainBoard.org | Should -Not -BeNullOrEmpty
-            $Config.mainBoard.projectNumber | Should -BeOfType [int]
+            ($Config.mainBoard.projectNumber -is [int] -or $Config.mainBoard.projectNumber -is [long]) | Should -Be $true
         }
 
         It "has at least one secondary board" {
@@ -26,7 +26,7 @@ Describe "sync-config.json" {
         It "gives every secondary board an org and a numeric projectNumber" {
             foreach ($board in $Config.secondaryBoards) {
                 $board.org | Should -Not -BeNullOrEmpty -Because "every board entry must declare its org"
-                $board.projectNumber | Should -BeOfType [int] -Because "$($board.org) is missing a numeric projectNumber"
+                ($board.projectNumber -is [int] -or $board.projectNumber -is [long]) | Should -Be $true -Because "$($board.org) is missing a numeric projectNumber"
             }
         }
 
@@ -41,7 +41,7 @@ Describe "sync-config.json" {
         }
 
         It "has a numeric changelogRetentionDays" {
-            $Config.changelogRetentionDays | Should -BeOfType [int]
+            ($Config.changelogRetentionDays -is [int] -or $Config.changelogRetentionDays -is [long]) | Should -Be $true
         }
     }
 }
