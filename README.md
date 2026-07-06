@@ -55,7 +55,7 @@ Can also be triggered manually via `workflow_dispatch`.
 
 ## Project Structure
 ```
-pm-agent-workflows/
+project-board-syncer/
 ├── .agent/
 │   ├── rules/          # AI agent rules & context
 │   └── workflows/      # Slash command definitions
