@@ -11,6 +11,10 @@ on:
         options:
           - Regular
           - Full
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync-boards/sync-config.json'
   # schedule:
   #   # Scheduled runs migrated to cron-job.org (Account: jayalathmegha@gmail.com) to avoid GitHub Actions cron drift.
   #   # ~11:00 AM, ~5:00 PM Asia/Colombo (UTC+5:30) on weekdays
@@ -19,7 +23,44 @@ on:
   #   - cron: '47 23 * * 5'
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Pester and PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -RequiredVersion 5.5.0 -Force -SkipPublisherCheck -Scope CurrentUser
+          Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck -Scope CurrentUser
+
+      - name: Run Pester tests (validates sync-config.json and helper logic)
+        shell: pwsh
+        run: |
+          Import-Module Pester -RequiredVersion 5.5.0
+          $result = Invoke-Pester -Path scripts/sync-boards/tests -CI -PassThru
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+      - name: Lint sync-boards.ps1 (PSScriptAnalyzer)
+        shell: pwsh
+        run: |
+          $findings = Invoke-ScriptAnalyzer -Path scripts/sync-boards/sync-boards.ps1
+          $errors = $findings | Where-Object { $_.Severity -eq 'Error' }
+          $warnings = $findings | Where-Object { $_.Severity -eq 'Warning' }
+          if ($warnings) {
+            Write-Host "PSScriptAnalyzer warnings (non-blocking):"
+            $warnings | Format-Table -AutoSize | Out-String | Write-Host
+          }
+          if ($errors) {
+            Write-Host "PSScriptAnalyzer errors:"
+            $errors | Format-Table -AutoSize | Out-String | Write-Host
+            exit 1
+          }
+
   sync-boards:
+    needs: validate
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       TZ: "Asia/Colombo"
@@ -59,16 +100,17 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Only stage the changelog for regular syncs; FullSync logs to separate files
-          if [ "${{ steps.sync.outputs.is_full_sync }}" != "true" ]; then
-            git add changelogs/sync-boards.md
-          else
-            # Stage the full sync manifest and log for rollback and history
-            git add changelogs/full-sync-manifest.json || true
-            git add changelogs/full-sync.log || true
-          fi
-          git add scripts/sync-boards/sync-config.json
+          # Stage every known output path the sync script can touch, regardless of sync
+          # type — `git add` is a no-op for files that didn't change, and `|| true`
+          # tolerates paths that don't exist yet (e.g. no FullSync manifest this run).
+          git add changelogs/sync-boards.md || true
+          git add changelogs/full-sync-manifest.json || true
+          git add changelogs/full-sync.log || true
+          git add scripts/sync-boards/sync-config.json || true
           git diff --staged --quiet || git commit -m "chore: auto-update board sync data"
+          # Discards any OTHER unstaged change in the working tree (e.g. stray temp
+          # files) before rebasing. If the script ever grows a new output file, add an
+          # explicit `git add` for it above — otherwise this line will silently drop it.
           git restore .
           git pull --rebase origin main
           git push

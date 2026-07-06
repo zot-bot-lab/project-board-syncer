@@ -50,6 +50,7 @@ if ($RollbackFullSync) {
 
 # --- Load Config ---
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Import-Module (Join-Path $scriptDir "SyncBoards.Helpers.psm1") -Force
 $configPath = Join-Path $scriptDir "sync-config.json"
 if (-not (Test-Path $configPath)) {
     Write-Error "Config file not found: $configPath"
@@ -405,24 +406,6 @@ if (-not $targetIterationId) {
 Write-Host "[MAIN] Setup complete. $($mainItems.Count) items cached.`n"
 
 # ============================================================
-# Helper function
-# ============================================================
-function Get-UpdateHash {
-    param($mVal, $sVal, $field, $targetId, $flag, $fieldName)
-    if (-not $field) { return $null }
-    if ($sVal) {
-        if (-not $mVal -or $mVal -ne $sVal) {
-            return @{ fieldId = $field.id; flag = $flag; value = [string]$targetId; clear = $false; name = $fieldName; newValue = $sVal }
-        }
-    } else {
-        if ($mVal) {
-            return @{ fieldId = $field.id; clear = $true; name = $fieldName; newValue = "None" }
-        }
-    }
-    return $null
-}
-
-# ============================================================
 # PHASE B: Loop over each secondary board
 # ============================================================
 $totalAdded = 0
@@ -442,19 +425,18 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
     $secNum = $board.projectNumber
     
     try {
-        Write-Host "--------------------------------------------"
-        Write-Host "  Board $($bi + 1)/$($config.secondaryBoards.Count): $secOrg (#$secNum)"
-        Write-Host "--------------------------------------------"
-        
         # Resolve secondary board project ID and Name (cached in config)
         $secProjId = $board.projectId
         $secProjName = $board.projectName
         if (-not $secProjId -or -not $secProjName) {
-            Write-Host "  Resolving project Name/ID (will be cached)..."
+            Write-Host "  Resolving project Name/ID for $secOrg (#$secNum) (will be cached)..."
             $secProjListJson = Invoke-GHWithRetry -Arguments @("project", "list", "--owner", $secOrg, "--format", "json") -JsonOutput
             $secProj = $secProjListJson.projects | Where-Object { $_.number -eq $secNum }
             
             if (-not $secProj) {
+                Write-Host "--------------------------------------------"
+                Write-Host "  Board $($bi + 1)/$($config.secondaryBoards.Count): $secOrg (#$secNum)"
+                Write-Host "--------------------------------------------"
                 Write-Warning "  Could not resolve project for $secOrg #$secNum. Skipping."
                 continue
             }
@@ -470,6 +452,10 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
         }
         
         if (-not $secProjName) { $secProjName = "$secOrg (#$secNum)" }
+
+        Write-Host "--------------------------------------------"
+        Write-Host "  Board $($bi + 1)/$($config.secondaryBoards.Count): $secProjName"
+        Write-Host "--------------------------------------------"
         
         # Fetch secondary items via optimized GraphQL
         Write-Host "  Fetching items (GraphQL)..."

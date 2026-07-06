@@ -4,7 +4,7 @@ description: Sync tasks from a secondary project board to the main ZOT Team boar
 
 # Sync Project Boards
 
-This workflow executes the `sync-boards.ps1` script to automatically sync tasks from **16 secondary project boards** across multiple GitHub organizations to the main **team-zeroone** (Project #31) board.
+This workflow executes the `sync-boards.ps1` script to automatically sync tasks from secondary project boards across multiple GitHub organizations to the main **team-zeroone** (Project #31) board.
 
 The script runs instantly and determines the current week, filters items, checks statuses, and manages all GitHub GraphQL API operations without agent interaction.
 

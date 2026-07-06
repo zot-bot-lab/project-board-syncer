@@ -1,8 +1,8 @@
 ---
-description: Project context and configuration for pm-agent-workflows
+description: Project context and configuration for project-board-syncer
 ---
 
-# PM Agent Workflows
+# Project Board Syncer
 
 This project contains agent workflows for project management automation across GitHub organizations.
 
@@ -10,15 +10,14 @@ This project contains agent workflows for project management automation across G
 
 | Role | Org Login | Notes |
 |------|-----------|-------|
-| **Main** (destination) | `team-zeroone` | Central project board — ZOT Team |
-| **Secondary** (source) | `zot-bot-lab` | Individual product boards |
+| **Main** (destination) | `team-zeroone` | Central project board — ZOT Team, project #31 |
+| **Secondary** (source) | multiple orgs | Individual product boards — read-only sync sources |
 
 ## Project Boards
 
-| Board | Org | Project # |
-|-------|-----|-----------|
-| ZOT Team (Main) | `team-zeroone` | 31 |
-| Clockify Discord Reporter Product Board | `zot-bot-lab` | 1 |
+The main board and full list of secondary boards (org, project number, cached GraphQL IDs)
+live in `scripts/sync-boards/sync-config.json` — treat that file as the single source of
+truth. Do not duplicate the board list here; it changes often and a second copy will drift.
 
 ## Project Structure
 
@@ -31,8 +30,8 @@ This project contains agent workflows for project management automation across G
 ## Important Rules
 
 1. **Never delete items** on any project board.
-2. **Never modify** the secondary board — it is read-only for sync purposes.
-3. **Statuses** across all boards: Backlog, Ready, In progress, In review, Done, Blocked, Discarded.
+2. **Never modify** the secondary boards — they are read-only for sync purposes.
+3. **Statuses** across all boards: see `validStatuses` in `sync-config.json` (the canonical list).
 4. **Iteration field** is named "Week" on all boards.
-5. **After every workflow run**, update `README.md` at the project root to reflect any new workflows, boards, or structural changes.
+5. **When adding a new workflow** (not just a board — boards only need a `sync-config.json` entry), update `README.md` at the project root to describe it.
 

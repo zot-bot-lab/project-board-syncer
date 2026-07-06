@@ -5,7 +5,7 @@ A collection of automated workflows for managing GitHub Project Boards across mu
 ## Available Workflows
 
 ### `/sync-boards` - Project Board Sync
-Syncs tasks from 16 secondary project boards to the main **team-zeroone** (#31) board.
+Syncs tasks from the secondary project boards listed in `sync-config.json` to the main **team-zeroone** (#31) board. That file is the single source of truth for which boards are synced — this README does not duplicate the list.
 
 **Run manually:**
 ```powershell
