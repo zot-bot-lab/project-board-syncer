@@ -1,4 +1,4 @@
-name: Create Standard Project Board
+name: Create Project Board
 
 on:
   workflow_dispatch:
@@ -100,7 +100,7 @@ jobs:
           NEW_PROJECT_NUMBER: ${{ steps.clone.outputs.project_number }}
         run: |
           CONFIG_PATH="scripts/sync-boards/sync-config.json"
-          
+
           # Use jq to append the new project details to secondaryBoards array
           jq --arg org "$DEST_ORG" \
              --argjson num "$NEW_PROJECT_NUMBER" \
@@ -136,7 +136,7 @@ jobs:
         run: |
           NEW_PROJECT_URL="${{ steps.clone.outputs.project_url }}"
           NEW_TITLE="${{ inputs.project_title }}"
-          
+
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🎉 Success! New board is ready."
           echo "🔗 Board URL: $NEW_PROJECT_URL"
