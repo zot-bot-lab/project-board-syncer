@@ -42,10 +42,11 @@ jobs:
           $result = Invoke-Pester -Path scripts/sync-boards/tests -CI -PassThru
           if ($result.FailedCount -gt 0) { exit 1 }
 
-      - name: Lint sync-boards.ps1 (PSScriptAnalyzer)
+      - name: Lint sync-boards scripts (PSScriptAnalyzer)
         shell: pwsh
         run: |
           $findings = Invoke-ScriptAnalyzer -Path scripts/sync-boards/sync-boards.ps1
+          $findings += Invoke-ScriptAnalyzer -Path scripts/sync-boards/SyncBoards.Helpers.psm1
           $errors = $findings | Where-Object { $_.Severity -eq 'Error' }
           $warnings = $findings | Where-Object { $_.Severity -eq 'Warning' }
           if ($warnings) {
@@ -62,6 +63,11 @@ jobs:
     needs: validate
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    # Shared with project-board-creator.yml's write job: both commit to
+    # scripts/sync-boards/sync-config.json on main, so they must never run concurrently.
+    concurrency:
+      group: board-config-writer
+      cancel-in-progress: false
     env:
       TZ: "Asia/Colombo"
     steps:
@@ -100,17 +106,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Stage every known output path the sync script can touch, regardless of sync
-          # type — `git add` is a no-op for files that didn't change, and `|| true`
-          # tolerates paths that don't exist yet (e.g. no FullSync manifest this run).
-          git add changelogs/sync-boards.md || true
-          git add changelogs/full-sync-manifest.json || true
-          git add changelogs/full-sync.log || true
-          git add scripts/sync-boards/sync-config.json || true
+          # Scoped to the sync script's actual output surface (changelogs/ and its own
+          # config file), so any new output file under changelogs/ is picked up
+          # automatically without needing a matching line here.
+          git add changelogs/ scripts/sync-boards/sync-config.json
           git diff --staged --quiet || git commit -m "chore: auto-update board sync data"
-          # Discards any OTHER unstaged change in the working tree (e.g. stray temp
-          # files) before rebasing. If the script ever grows a new output file, add an
-          # explicit `git add` for it above — otherwise this line will silently drop it.
-          git restore .
           git pull --rebase origin main
           git push

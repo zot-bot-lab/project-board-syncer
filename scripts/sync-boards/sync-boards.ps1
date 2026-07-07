@@ -11,7 +11,7 @@ Optimizations:
 - Caches the main project GraphQL ID (PVT_) in sync-config.json after first fetch
 - Pre-checks GitHub API rate limit before starting
 - Retries transient API failures once before giving up
-- Batches field updates into a single GraphQL mutation per item
+- Batches every field update for an item into a single aliased GraphQL mutation
 - Smart iteration mapping with completed iterations support
 
 .PARAMETER DryRun
@@ -22,20 +22,29 @@ When specified, the script runs all comparison logic but skips any write operati
 When specified, the week/iteration filter is bypassed and ALL items with valid statuses
 are synced from every secondary board to the main board. Use once for a full backfill.
 
-.PARAMETER RollbackFullSync
-Reverts the most recent -FullSync run using the saved manifest. Removes items that were
-added and restores previous field values for items that were updated. Deletes the manifest
-after a successful rollback.
+.PARAMETER Rollback
+Reverts the most recent live (non-DryRun) run - regular or full sync - using the saved
+manifest. Removes items that were added and restores previous field values for items
+that were updated. Deletes the manifest after a successful rollback.
+-RollbackFullSync is accepted as a legacy alias for the same switch.
 #>
 
 param(
     [switch]$DryRun,
     [switch]$FullSync,
-    [switch]$RollbackFullSync
+    [Alias("RollbackFullSync")]
+    [switch]$Rollback
 )
 
 $ErrorActionPreference = "Stop"
-$GH = if (Get-Command "gh" -ErrorAction SilentlyContinue) { "gh" } else { "C:\Program Files\GitHub CLI\gh.exe" }
+$GH = if (Get-Command "gh" -ErrorAction SilentlyContinue) {
+    "gh"
+} elseif (Test-Path "C:\Program Files\GitHub CLI\gh.exe") {
+    "C:\Program Files\GitHub CLI\gh.exe"
+} else {
+    Write-Error "GitHub CLI ('gh') was not found on PATH or at the default Windows install location. Install it from https://cli.github.com/ and run 'gh auth login'."
+    exit 1
+}
 $MAX_RETRIES = 1
 
 if ($DryRun) {
@@ -44,8 +53,8 @@ if ($DryRun) {
 if ($FullSync) {
     Write-Host "[FULL-SYNC] Mode enabled - ALL items with valid statuses will be synced (no week filter).`n" -ForegroundColor Magenta
 }
-if ($RollbackFullSync) {
-    Write-Host "[ROLLBACK] Mode enabled - will revert the last -FullSync run using the saved manifest.`n" -ForegroundColor Yellow
+if ($Rollback) {
+    Write-Host "[ROLLBACK] Mode enabled - will revert the last live sync run using the saved manifest.`n" -ForegroundColor Yellow
 }
 
 # --- Load Config ---
@@ -72,9 +81,13 @@ try {
     $remaining = $rateLimitJson.data.rateLimit.remaining
     $resetAt = [datetime]::Parse($rateLimitJson.data.rateLimit.resetAt).ToLocalTime()
     Write-Host "[PRE] Rate limit: $remaining points remaining (resets at $($resetAt.ToString('HH:mm')))"
-    
-    # Realistic budget: ~5 calls for setup + ~15 per board (fetch + potential updates)
-    $minRequired = 50 + ($config.secondaryBoards.Count * 15)
+
+    # Realistic budget: ~5 calls for setup, plus a per-board estimate. Batched writes mean
+    # a touched item now costs ~1-2 calls instead of up to 8, but -FullSync touches far more
+    # items per board (a full backfill, not just the current/last week), so it gets a higher
+    # per-board allowance.
+    $perBoardEstimate = if ($FullSync) { 60 } else { 20 }
+    $minRequired = 50 + ($config.secondaryBoards.Count * $perBoardEstimate)
     if ($remaining -lt $minRequired) {
         Write-Error "Insufficient API quota ($remaining remaining, need ~$minRequired). Resets at $($resetAt.ToString('HH:mm')). Try again later."
         exit 1
@@ -86,29 +99,36 @@ try {
 # ============================================================
 # Retry Helper
 # ============================================================
+# Sets $script:LastGHSucceeded so callers using -SuppressError can still tell whether
+# the call actually worked, without a warning being printed for expected-failure paths
+# (e.g. probing for a concurrent add).
 function Invoke-GHWithRetry {
     param(
         [string[]]$Arguments,
         [switch]$JsonOutput,
         [switch]$SuppressError
     )
+    $script:LastGHSucceeded = $true
     for ($attempt = 0; $attempt -le $MAX_RETRIES; $attempt++) {
         try {
             $output = & $GH @Arguments 2>&1
             $stderr = $output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }
             $stdout = $output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }
-            
-            if ($stderr -and -not $SuppressError) {
+
+            if ($stderr) {
                 $errMsg = ($stderr | ForEach-Object { $_.ToString() }) -join "`n"
-                if ($errMsg -match "rate limit") {
-                    if ($attempt -lt $MAX_RETRIES) {
-                        Write-Host "      Rate limited, retrying in 5s..." -ForegroundColor Yellow
-                        Start-Sleep -Seconds 5
-                        continue
-                    }
+                $isRateLimit = $errMsg -match "rate limit"
+                if ($attempt -lt $MAX_RETRIES) {
+                    $waitSecs = if ($isRateLimit) { 5 } else { 3 }
+                    $reason = if ($isRateLimit) { "Rate limited" } else { "API error" }
+                    Write-Host "      $reason, retrying in ${waitSecs}s... ($errMsg)" -ForegroundColor Yellow
+                    Start-Sleep -Seconds $waitSecs
+                    continue
                 }
+                $script:LastGHSucceeded = $false
+                if (-not $SuppressError) { Write-Warning "      GH command failed: $errMsg" }
             }
-            
+
             if ($JsonOutput) {
                 $joined = ($stdout | ForEach-Object { $_.ToString() }) -join "`n"
                 if ($joined) { return $joined | ConvertFrom-Json }
@@ -122,27 +142,51 @@ function Invoke-GHWithRetry {
                 Start-Sleep -Seconds 3
                 continue
             }
+            $script:LastGHSucceeded = $false
             if (-not $SuppressError) { throw }
             return $null
         }
     }
 }
 
+# Applies every field update for one item as a single aliased GraphQL mutation instead
+# of one `gh project item-edit` call per field.
+function Invoke-BatchedFieldUpdate {
+    param($ItemId, $ProjectId, $Updates)
+    $updateList = @($Updates)
+    if ($updateList.Count -eq 0) { return $true }
+
+    $mutation = New-ItemFieldUpdateMutation -Updates $updateList
+    $mutFile = [System.IO.Path]::GetTempFileName()
+    try {
+        $mutation | Set-Content -Path $mutFile -Encoding UTF8
+        $result = Invoke-GHWithRetry -Arguments @("api", "graphql", "-F", "query=@$mutFile", "-F", "projectId=$ProjectId", "-F", "itemId=$ItemId") -JsonOutput -SuppressError
+        if (-not $script:LastGHSucceeded -or -not $result -or -not $result.data) {
+            Write-Warning "      Failed to apply $($updateList.Count) field update(s) for item $ItemId"
+            return $false
+        }
+        return $true
+    } finally {
+        if (Test-Path $mutFile) { Remove-Item $mutFile }
+    }
+}
+
 # ============================================================
-# ROLLBACK: Execute and exit early if -RollbackFullSync
+# ROLLBACK: Execute and exit early if -Rollback
 # ============================================================
-if ($RollbackFullSync) {
+if ($Rollback) {
     $repoRootForRollback = Split-Path -Parent (Split-Path -Parent $scriptDir)
-    $manifestPath = Join-Path (Join-Path $repoRootForRollback "changelogs") "full-sync-manifest.json"
+    $manifestPath = Join-Path (Join-Path $repoRootForRollback "changelogs") "last-sync-manifest.json"
     if (-not (Test-Path $manifestPath)) {
-        Write-Error "No full-sync manifest found at: $manifestPath`nRun -FullSync first to generate one."
+        Write-Error "No sync manifest found at: $manifestPath`nRun a live sync first to generate one."
         exit 1
     }
     $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
     $rbOrg     = $manifest.mainOrg
     $rbProjNum = $manifest.mainProjNum
     $rbProjId  = $manifest.mainProjId
-    Write-Host "[ROLLBACK] Manifest from: $($manifest.timestamp)" -ForegroundColor Yellow
+    $rbMode    = if ($manifest.mode) { $manifest.mode } else { "Unknown" }
+    Write-Host "[ROLLBACK] Manifest from: $($manifest.timestamp) (mode: $rbMode)" -ForegroundColor Yellow
     Write-Host "[ROLLBACK] Reverting $($manifest.entries.Count) change(s) on $rbOrg (#$rbProjNum)...`n" -ForegroundColor Yellow
     $rvAdd = 0; $rvUpd = 0; $rvFail = 0
     foreach ($entry in $manifest.entries) {
@@ -152,8 +196,8 @@ if ($RollbackFullSync) {
                 Write-Host "    [DRY-RUN] Would delete item: $($entry.itemId)" -ForegroundColor Cyan
                 $rvAdd++
             } else {
-                $del = Invoke-GHWithRetry -Arguments @("project", "item-delete", "$rbProjNum", "--owner", $rbOrg, "--id", $entry.itemId) -SuppressError
-                if ($del -ne $null -or $true) { $rvAdd++ } else { $rvFail++; Write-Warning "    Failed to remove: $($entry.title)" }
+                Invoke-GHWithRetry -Arguments @("project", "item-delete", "$rbProjNum", "--owner", $rbOrg, "--id", $entry.itemId) -SuppressError | Out-Null
+                if ($script:LastGHSucceeded) { $rvAdd++ } else { $rvFail++; Write-Warning "    Failed to remove: $($entry.title)" }
             }
         } elseif ($entry.action -eq "update") {
             Write-Host "  [RESTORE] $($entry.title)"
@@ -161,14 +205,8 @@ if ($RollbackFullSync) {
                 Write-Host "    [DRY-RUN] Would restore $($entry.previousValues.Count) field(s)" -ForegroundColor Cyan
                 $rvUpd++
             } else {
-                $restored = $true
-                foreach ($pv in $entry.previousValues) {
-                    $cmdArgs = @("project", "item-edit", "--id", $entry.itemId, "--project-id", $rbProjId, "--field-id", $pv.fieldId)
-                    if ($pv.clear) { $cmdArgs += "--clear" }
-                    else { $cmdArgs += $pv.flag; $cmdArgs += $pv.value }
-                    Invoke-GHWithRetry -Arguments $cmdArgs -SuppressError | Out-Null
-                }
-                if ($restored) { $rvUpd++ } else { $rvFail++ }
+                $restored = Invoke-BatchedFieldUpdate -ItemId $entry.itemId -ProjectId $rbProjId -Updates $entry.previousValues
+                if ($restored) { $rvUpd++ } else { $rvFail++; Write-Warning "    Failed to restore: $($entry.title)" }
             }
         }
     }
@@ -201,15 +239,15 @@ if (-not $mainProjId) {
     Write-Host "[MAIN] Resolving project ID (first run, will be cached)..."
     $mainProjIdJson = Invoke-GHWithRetry -Arguments @("project", "list", "--owner", $MainOrg, "--format", "json") -JsonOutput
     $mainProjId = ($mainProjIdJson.projects | Where-Object { $_.number -eq $MainProjNum }).id
-    
+
     if (-not $mainProjId) {
         Write-Error "Could not resolve project ID for $MainOrg #$MainProjNum"
         exit 1
     }
-    
+
     # Cache it in sync-config.json
     $config.mainBoard | Add-Member -NotePropertyName "projectId" -NotePropertyValue $mainProjId -Force
-    $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+    $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath -Encoding UTF8
     Write-Host "[MAIN] Cached project ID: $mainProjId"
 } else {
     Write-Host "[MAIN] Using cached project ID: $mainProjId"
@@ -248,7 +286,8 @@ query(`$id: ID!, `$cursor: String) {
             ... on Issue { url title }
             ... on PullRequest { url title }
           }
-          fieldValues(first: 10) {
+          fieldValues(first: 20) {
+            pageInfo { hasNextPage }
             nodes {
               ... on ProjectV2ItemFieldSingleSelectValue {
                 name
@@ -283,22 +322,22 @@ function Fetch-ProjectItems {
     $allItems = [System.Collections.Generic.List[hashtable]]::new()
     $cursor = $null
     $page = 0
-    
+
     $queryFile = [System.IO.Path]::GetTempFileName()
     try {
         $itemsQuery | Set-Content -Path $queryFile
-        
+
         do {
             $page++
             $apiArgs = @("api", "graphql", "-F", "id=$projId", "-F", "query=@$queryFile")
             if ($cursor) { $apiArgs += @("-F", "cursor=$cursor") }
-            
+
             $result = Invoke-GHWithRetry -Arguments $apiArgs -JsonOutput
             if (-not $result -or -not $result.data) {
                 Write-Warning "  Failed to fetch $label items page $page."
                 break
             }
-            
+
             $itemsData = $result.data.node.items
             foreach ($node in $itemsData.nodes) {
                 $itemUrl = $null
@@ -308,7 +347,11 @@ function Fetch-ProjectItems {
                     if ($node.content.title) { $itemTitle = $node.content.title }
                 }
                 $item = @{ id = $node.id; url = $itemUrl; title = $itemTitle }
-                
+
+                if ($node.fieldValues.pageInfo.hasNextPage) {
+                    Write-Warning "  Item '$itemTitle' in $label has more than 20 tracked fields - some field values may not be synced."
+                }
+
                 # Parse field values
                 foreach ($fv in $node.fieldValues.nodes) {
                     if (-not $fv.field) { continue }
@@ -326,7 +369,7 @@ function Fetch-ProjectItems {
                 }
                 $allItems.Add($item)
             }
-            
+
             $cursor = if ($itemsData.pageInfo.hasNextPage) { $itemsData.pageInfo.endCursor } else { $null }
         } while ($cursor)
     } finally {
@@ -413,17 +456,18 @@ $totalUpdated = 0
 $totalSkipped = 0
 $runLog = [System.Collections.Generic.List[string]]::new()
 
-# Manifest tracking: only used during a live (non-dry-run) FullSync
+# Manifest tracking: built for any live (non-dry-run) run, regular or full, so a
+# -Rollback is always available for whatever the last live run did.
 $repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
-$manifestPath = Join-Path (Join-Path $repoRoot "changelogs") "full-sync-manifest.json"
-$fullSyncManifest = if ($FullSync -and -not $DryRun) { [System.Collections.Generic.List[hashtable]]::new() } else { $null }
+$manifestPath = Join-Path (Join-Path $repoRoot "changelogs") "last-sync-manifest.json"
+$syncManifest = if (-not $DryRun) { [System.Collections.Generic.List[hashtable]]::new() } else { $null }
 
 try {
 for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
     $board = $config.secondaryBoards[$bi]
     $secOrg = $board.org
     $secNum = $board.projectNumber
-    
+
     try {
         # Resolve secondary board project ID and Name (cached in config)
         $secProjId = $board.projectId
@@ -432,7 +476,7 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
             Write-Host "  Resolving project Name/ID for $secOrg (#$secNum) (will be cached)..."
             $secProjListJson = Invoke-GHWithRetry -Arguments @("project", "list", "--owner", $secOrg, "--format", "json") -JsonOutput
             $secProj = $secProjListJson.projects | Where-Object { $_.number -eq $secNum }
-            
+
             if (-not $secProj) {
                 Write-Host "--------------------------------------------"
                 Write-Host "  Board $($bi + 1)/$($config.secondaryBoards.Count): $secOrg (#$secNum)"
@@ -448,41 +492,27 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                 $secProjName = $secProj.title
                 $board | Add-Member -NotePropertyName "projectName" -NotePropertyValue $secProjName -Force
             }
-            $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath
+            $config | ConvertTo-Json -Depth 10 | Set-Content -Path $configPath -Encoding UTF8
         }
-        
+
         if (-not $secProjName) { $secProjName = "$secOrg (#$secNum)" }
 
         Write-Host "--------------------------------------------"
         Write-Host "  Board $($bi + 1)/$($config.secondaryBoards.Count): $secProjName"
         Write-Host "--------------------------------------------"
-        
+
         # Fetch secondary items via optimized GraphQL
         Write-Host "  Fetching items (GraphQL)..."
         $secItems = Fetch-ProjectItems $secProjId $secProjName
-        
+
         # Detect current week and previous week on this secondary board
-        $currentWeekTitle = $null
-        $previousWeekTitle = $null
-        $prevWeekEndDate = [datetime]::MinValue
-        $recentPastThreshold = $today.AddDays(-14) # Only consider past weeks that ended within the last 14 days
-        
-        foreach ($item in $secItems) {
-            if ($item.week -and $item.week.startDate) {
-                $start = [datetime]::Parse($item.week.startDate)
-                $end = $start.AddDays($item.week.duration)
-                if ($today -ge $start -and $today -le $end) {
-                    $currentWeekTitle = $item.week.title
-                } elseif ($end -lt $today -and $end -ge $recentPastThreshold -and $end -gt $prevWeekEndDate) {
-                    $previousWeekTitle = $item.week.title
-                    $prevWeekEndDate = $end
-                }
-            }
-        }
-        
+        $weekWindow = Get-WeekWindow -Items $secItems -Today $today -RecentPastDays 14
+        $currentWeekTitle = $weekWindow.current
+        $previousWeekTitle = $weekWindow.previous
+
         # Filter items
         $itemsToSync = [System.Collections.Generic.List[hashtable]]::new()
-        
+
         if ($FullSync) {
             # Full backfill: sync every item with a valid status, regardless of week
             Write-Host "  [FULL-SYNC] Including all items (no week filter)."
@@ -502,22 +532,18 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
             }
             Write-Host "  Current iteration: $currentWeekTitle"
             foreach ($item in $secItems) {
-                $isCurrentWeek = ($item.week -and $item.week.title -eq $currentWeekTitle)
-                $isLastWeek = ($previousWeekTitle -and $item.week -and $item.week.title -eq $previousWeekTitle)
                 $isAlreadyInMain = if ($item.url) { $mainUrlMap.ContainsKey($item.url) } else { $false }
-                
-                if (($isCurrentWeek -or $isLastWeek -or $isAlreadyInMain) -and $item.status -in $ValidStatuses) {
-                    if ($item.url) {
-                        $item.isLastWeek = $isLastWeek
-                        # Items included only because they're already on the main board (not in current/last week)
-                        # should NOT have their iteration updated
-                        $item | Add-Member -NotePropertyName 'isOrphan' -NotePropertyValue (-not $isCurrentWeek -and -not $isLastWeek -and $isAlreadyInMain) -Force
-                        $itemsToSync.Add($item)
-                    }
+                $scope = Get-ItemSyncScope -Item $item -CurrentWeekTitle $currentWeekTitle -PreviousWeekTitle $previousWeekTitle -IsAlreadyInMain $isAlreadyInMain -ValidStatuses $ValidStatuses
+                if ($scope.inScope) {
+                    $item.isLastWeek = $scope.isLastWeek
+                    # Items included only because they're already on the main board (not in current/last week)
+                    # should NOT have their iteration updated
+                    $item | Add-Member -NotePropertyName 'isOrphan' -NotePropertyValue $scope.isOrphan -Force
+                    $itemsToSync.Add($item)
                 }
             }
         }
-        
+
         Write-Host "  Items to sync: $($itemsToSync.Count)"
         if ($itemsToSync.Count -eq 0) {
             Write-Host ""
@@ -526,20 +552,20 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
             $runLog.Add("*No items with valid statuses in current week.*")
             continue
         }
-        
+
         # Sync each item
         $boardAdded = 0
         $boardUpdated = 0
         $boardSkipped = 0
-        
+
         foreach ($sItem in $itemsToSync) {
             $url = $sItem.url
             $title = $sItem.title
             $mItem = $mainUrlMap[$url]
             $isNew = (-not $mItem)
-            
+
             $updates = [System.Collections.Generic.List[Hashtable]]::new()
-            
+
             # 1. Status (with option ID validation)
             $tid = $null
             if ($sItem.status) {
@@ -553,38 +579,28 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                 $u = Get-UpdateHash $mv $sItem.status $mainStatusField $tid "--single-select-option-id" "Status"
                 if ($u) { $updates.Add($u) }
             }
-            
+
             # 2. Iteration - only sync the Week field in normal (non-FullSync) mode.
             # In -FullSync we are importing tickets, not re-assigning them to sprints.
             # Orphan items (included only because they're already on the main board) also skip iteration updates.
             if (-not $FullSync -and -not $sItem.isOrphan) {
                 $sTargetIterationId = $null
                 if ($sItem.week -and $sItem.week.startDate) {
-                    $sStart = [datetime]::Parse($sItem.week.startDate)
-                    $midPoint = $sStart.AddDays($sItem.week.duration / 2)
-                    foreach ($mIter in $mainWeekConfig) {
-                        if ($mIter.startDate) {
-                            $mStart = [datetime]::Parse($mIter.startDate)
-                            $mEnd = $mStart.AddDays($mIter.duration)
-                            if ($midPoint -ge $mStart -and $midPoint -le $mEnd) {
-                                $sTargetIterationId = $mIter.id
-                                break
-                            }
-                        }
-                    }
+                    $sTargetIterationId = Get-MidpointIterationMatch -WeekStartDate $sItem.week.startDate -WeekDuration $sItem.week.duration -MainIterations $mainWeekConfig
                 }
                 # Fallback for current week items if time-period matching failed
                 if (-not $sTargetIterationId -and -not $sItem.isLastWeek) {
                     $sTargetIterationId = $targetIterationId
+                }
+                if (-not $sTargetIterationId) {
+                    Write-Warning "      Could not map iteration for: $title (secondary week: '$($sItem.week.title)') - Week field left unchanged"
                 }
                 # Prevent iteration ping-pong: skip update if sprints start on the same day
                 if ($sTargetIterationId) {
                     $mv = if ($mItem -and $mItem.week) { $mItem.week.iterationId } else { $null }
                     $needsIterationUpdate = $true
                     if ($mv -and $mItem.week -and $mItem.week.startDate -and $sItem.week -and $sItem.week.startDate) {
-                        $mItemStart = [datetime]::Parse($mItem.week.startDate)
-                        $sItemStart = [datetime]::Parse($sItem.week.startDate)
-                        if ($mItemStart -eq $sItemStart) { $needsIterationUpdate = $false }
+                        if (Test-IterationStartsAligned -MainStartDate $mItem.week.startDate -SecondaryStartDate $sItem.week.startDate) { $needsIterationUpdate = $false }
                     }
                     if ($needsIterationUpdate) {
                         $u = Get-UpdateHash $mv $sTargetIterationId $mainWeekField $sTargetIterationId "--iteration-id" "Week"
@@ -592,7 +608,7 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                     }
                 }
             }
-            
+
             # 3. Priority
             $sv = $sItem.priority
             $tid = $null
@@ -605,7 +621,7 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                 $u = Get-UpdateHash $mv $sv $mainPriorityField $tid "--single-select-option-id" "Priority"
                 if ($u) { $updates.Add($u) }
             }
-            
+
             # 4. Size
             $sv = $sItem.size
             $tid = $null
@@ -618,25 +634,25 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                 $u = Get-UpdateHash $mv $sv $mainSizeField $tid "--single-select-option-id" "Size"
                 if ($u) { $updates.Add($u) }
             }
-            
+
             # 5. Estimate
             $sv = $sItem.estimate
             $mv = if ($mItem) { $mItem.estimate } else { $null }
             $u = Get-UpdateHash $mv $sv $mainEstimateField $sv "--number" "Estimate"
             if ($u) { $updates.Add($u) }
-            
+
             # 6. Start Date
             $sv = $sItem.'start date'
             $mv = if ($mItem) { $mItem.'start date' } else { $null }
             $u = Get-UpdateHash $mv $sv $mainStartDateField $sv "--date" "Start date"
             if ($u) { $updates.Add($u) }
-            
+
             # 7. Target Date / End Date -> End Date
             $sv = if ($sItem.'target date') { $sItem.'target date' } else { $sItem.'end date' }
             $mv = if ($mItem) { $mItem.'end date' } else { $null }
             $u = Get-UpdateHash $mv $sv $mainEndDateField $sv "--date" "End date"
             if ($u) { $updates.Add($u) }
-            
+
             $weekLabel = if ($sItem.isLastWeek) { " (last week)" } else { "" }
             if ($isNew) {
                 if ($DryRun) {
@@ -647,15 +663,10 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                 } else {
                     Write-Host "    [ADD] $title$weekLabel"
                     $addOutput = Invoke-GHWithRetry -Arguments @("project", "item-add", "$MainProjNum", "--owner", $MainOrg, "--url", $url, "--format", "json") -JsonOutput -SuppressError
-                    
+
                     if ($addOutput -and $addOutput.id) {
                         $newItemId = $addOutput.id
-                        foreach ($upd in $updates) {
-                            $cmdArgs = @("project", "item-edit", "--id", $newItemId, "--project-id", $mainProjId, "--field-id", $upd.fieldId)
-                            if ($upd.clear) { $cmdArgs += "--clear" }
-                            else { $cmdArgs += $upd.flag; $cmdArgs += $upd.value }
-                            Invoke-GHWithRetry -Arguments $cmdArgs -SuppressError > $null
-                        }
+                        Invoke-BatchedFieldUpdate -ItemId $newItemId -ProjectId $mainProjId -Updates $updates | Out-Null
                         $mainUrlMap[$url] = @{ id = $newItemId; url = $url; status = $sItem.status }
                         $boardAdded++
                         $fieldSummaries = @()
@@ -666,8 +677,8 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                         $fieldNames = $fieldSummaries -join ", "
                         $runLog.Add("  - **[ADD]** $title$weekLabel - fields set: $fieldNames")
                         # Record in manifest for potential rollback
-                        if ($fullSyncManifest -ne $null) {
-                            $fullSyncManifest.Add(@{ action = "add"; itemId = $newItemId; url = $url; title = $title })
+                        if ($syncManifest -ne $null) {
+                            $syncManifest.Add(@{ action = "add"; itemId = $newItemId; url = $url; title = $title })
                         }
                     } else {
                         # Handle concurrent add: item may have been added between fetch and now
@@ -691,7 +702,7 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                     } else {
                         Write-Host "    [UPDATE] $($updates.Count) field(s): $title$weekLabel"
                         # Capture previous state for rollback manifest before overwriting
-                        if ($fullSyncManifest -ne $null) {
+                        if ($syncManifest -ne $null) {
                             $prevValues = [System.Collections.Generic.List[hashtable]]::new()
                             foreach ($upd in $updates) {
                                 switch ($upd.name) {
@@ -706,22 +717,17 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                                     "Size"       { $prevOptId = if ($mItem.size) { ($mainSizeField.options | Where-Object { $_.name -eq $mItem.size }).id } else { $null }
                                                    if ($prevOptId) { $prevValues.Add(@{ fieldId = $mainSizeField.id;     flag = "--single-select-option-id"; value = $prevOptId;                    clear = $false }) }
                                                    else            { $prevValues.Add(@{ fieldId = $mainSizeField.id;     clear = $true }) } }
-                                    "Estimate"   { if ($null -ne $mItem.estimate) { $prevValues.Add(@{ fieldId = $mainEstimateField.id;  flag = "--number"; value = [string]$mItem.estimate;    clear = $false }) }
-                                                   else                           { $prevValues.Add(@{ fieldId = $mainEstimateField.id;  clear = $true }) } }
+                                    "Estimate"   { if (Test-HasValue $mItem.estimate) { $prevValues.Add(@{ fieldId = $mainEstimateField.id;  flag = "--number"; value = [string]$mItem.estimate;    clear = $false }) }
+                                                   else                                { $prevValues.Add(@{ fieldId = $mainEstimateField.id;  clear = $true }) } }
                                     "Start date" { if ($mItem.'start date')       { $prevValues.Add(@{ fieldId = $mainStartDateField.id; flag = "--date";   value = $mItem.'start date';         clear = $false }) }
                                                    else                           { $prevValues.Add(@{ fieldId = $mainStartDateField.id; clear = $true }) } }
                                     "End date"   { if ($mItem.'end date')         { $prevValues.Add(@{ fieldId = $mainEndDateField.id;   flag = "--date";   value = $mItem.'end date';           clear = $false }) }
                                                    else                           { $prevValues.Add(@{ fieldId = $mainEndDateField.id;   clear = $true }) } }
                                 }
                             }
-                            $fullSyncManifest.Add(@{ action = "update"; itemId = $mItem.id; url = $url; title = $title; previousValues = @($prevValues) })
+                            $syncManifest.Add(@{ action = "update"; itemId = $mItem.id; url = $url; title = $title; previousValues = @($prevValues) })
                         }
-                        foreach ($upd in $updates) {
-                            $cmdArgs = @("project", "item-edit", "--id", $mItem.id, "--project-id", $mainProjId, "--field-id", $upd.fieldId)
-                            if ($upd.clear) { $cmdArgs += "--clear" }
-                            else { $cmdArgs += $upd.flag; $cmdArgs += $upd.value }
-                            Invoke-GHWithRetry -Arguments $cmdArgs -SuppressError > $null
-                        }
+                        Invoke-BatchedFieldUpdate -ItemId $mItem.id -ProjectId $mainProjId -Updates $updates | Out-Null
                     }
                     $boardUpdated++
                     $fieldSummaries = @()
@@ -737,7 +743,7 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
                 }
             }
         }
-        
+
         $runLog.Insert(($runLog.Count - $boardAdded - $boardUpdated), "")
         $runLog.Insert(($runLog.Count - $boardAdded - $boardUpdated), "#### $secProjName - +$boardAdded added, ~$boardUpdated updated, =$boardSkipped skipped")
         Write-Host "  Results: +$boardAdded added, ~$boardUpdated updated, =$boardSkipped skipped`n"
@@ -753,19 +759,20 @@ for ($bi = 0; $bi -lt $config.secondaryBoards.Count; $bi++) {
 } # end board loop
 } finally {
     # Save manifest here so it's always written, even if the script crashes mid-run
-    if ($fullSyncManifest -ne $null -and $fullSyncManifest.Count -gt 0) {
+    if ($syncManifest -ne $null -and $syncManifest.Count -gt 0) {
         $manifestData = @{
             timestamp   = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+            mode        = if ($FullSync) { "FullSync" } else { "Regular" }
             mainOrg     = $MainOrg
             mainProjNum = $MainProjNum
             mainProjId  = $mainProjId
-            entries     = @($fullSyncManifest)
+            entries     = @($syncManifest)
         }
         $changelogDir = Join-Path $repoRoot "changelogs"
         if (-not (Test-Path $changelogDir)) { New-Item -ItemType Directory -Path $changelogDir -Force | Out-Null }
         $manifestData | ConvertTo-Json -Depth 10 | Set-Content -Path $manifestPath -Encoding UTF8
-        Write-Host "`n[MANIFEST] Rollback manifest saved ($($fullSyncManifest.Count) entries): $manifestPath" -ForegroundColor Magenta
-        Write-Host "[MANIFEST] To rollback, run: .\sync-boards.ps1 -RollbackFullSync" -ForegroundColor Magenta
+        Write-Host "`n[MANIFEST] Rollback manifest saved ($($syncManifest.Count) entries): $manifestPath" -ForegroundColor Magenta
+        Write-Host "[MANIFEST] To rollback, run: .\sync-boards.ps1 -Rollback" -ForegroundColor Magenta
     }
 }
 
@@ -784,11 +791,13 @@ if ($DryRun) {
     exit 0
 }
 
+$retentionDays = if ($config.changelogRetentionDays) { $config.changelogRetentionDays } else { 14 }
+$cutoffDate = $today.AddDays(-$retentionDays).Date
+
 if (-not $FullSync) {
     # ============================================================
     # PHASE D: Write to Changelog
     # ============================================================
-    $repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
     $changelogPath = Join-Path (Join-Path $repoRoot "changelogs") "sync-boards.md"
     $changelogDir = Split-Path -Parent $changelogPath
     if (-not (Test-Path $changelogDir)) { New-Item -ItemType Directory -Path $changelogDir -Force > $null }
@@ -799,7 +808,7 @@ if (-not $FullSync) {
 
     # Build the new version entry
     $entryLines = [System.Collections.Generic.List[string]]::new()
-    # Version placeholder ΓÇö will be replaced after we determine the version number
+    # Version placeholder -- will be replaced after we determine the version number
     $entryLines.Add("VPLACEHOLDER")
     $entryLines.Add("")
     $entryLines.Add("| Added | Updated | Skipped |")
@@ -850,12 +859,12 @@ if (-not $FullSync) {
 
     # Insert into the changelog
     if ($body -match [regex]::Escape($dateHeader)) {
-        # Today's date section exists ΓÇö insert the new version right after the date header
+        # Today's date section exists -- insert the new version right after the date header
         $datePos = $body.IndexOf($dateHeader)
         $insertPos = $datePos + $dateHeader.Length
         $newBody = $body.Substring(0, $insertPos) + "`n`n" + $entryText + $body.Substring($insertPos)
     } else {
-        # New date ΓÇö prepend a new section above everything
+        # New date -- prepend a new section above everything
         $newBody = $dateHeader + "`n`n" + $entryText + "`n`n---`n`n" + $body
     }
 
@@ -866,9 +875,6 @@ if (-not $FullSync) {
     # ============================================================
     # PHASE E: Changelog Cleanup (trim old entries)
     # ============================================================
-    $retentionDays = if ($config.changelogRetentionDays) { $config.changelogRetentionDays } else { 14 }
-    $cutoffDate = $today.AddDays(-$retentionDays).Date
-
     Write-Host "[CLEANUP] Retaining entries from last $retentionDays days (cutoff: $($cutoffDate.ToString('yyyy-MM-dd')))"
 
     $rawContent = Get-Content -Raw $changelogPath
@@ -913,8 +919,29 @@ if (-not $FullSync) {
   Skipped: $totalSkipped
 --------------------------------------------
 "@
-    Add-Content -Path $fullSyncLogPath -Value $logEntry
+    Add-Content -Path $fullSyncLogPath -Value $logEntry -Encoding UTF8
     Write-Host "[LOG] Full Sync log updated: $fullSyncLogPath"
+
+    # ============================================================
+    # PHASE E (Full-Sync variant): prune full-sync.log the same way sync-boards.md is pruned
+    # ============================================================
+    if (Test-Path $fullSyncLogPath) {
+        $fsRaw = Get-Content -Raw $fullSyncLogPath
+        $fsEntries = [regex]::Split($fsRaw, '(?=\r?\n?============================================\r?\n  FULL SYNC:)') | Where-Object { $_.Trim() }
+        $fsKept = [System.Collections.Generic.List[string]]::new()
+        foreach ($entry in $fsEntries) {
+            $m = [regex]::Match($entry, 'FULL SYNC:\s*(\d{4}-\d{2}-\d{2})')
+            if ($m.Success) {
+                $entryDate = [datetime]::Parse($m.Groups[1].Value)
+                if ($entryDate -ge $cutoffDate) { $fsKept.Add($entry.Trim()) } else { Write-Host "[CLEANUP] Removing full-sync.log entry from $($m.Groups[1].Value)" }
+            } else {
+                $fsKept.Add($entry.Trim())
+            }
+        }
+        $fsContent = (($fsKept -join "`n`n").Trim()) + "`n"
+        $fsContent | Set-Content -Path $fullSyncLogPath -Encoding UTF8
+        Write-Host "[CLEANUP] full-sync.log: kept $($fsKept.Count) entr$(if ($fsKept.Count -eq 1) {'y'} else {'ies'})."
+    }
 }
 
 exit 0

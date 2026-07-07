@@ -47,16 +47,16 @@ powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -Fu
 ```
 
 > Combine with `-DryRun` to preview first: `... -FullSync -DryRun`
-> A rollback manifest is saved automatically to `changelogs/full-sync-manifest.json`.
+> A rollback manifest is saved automatically to `changelogs/last-sync-manifest.json` after every live run (regular or full).
 
-**Rollback last full backfill (emergency revert):**
+**Rollback the last live run (emergency revert):**
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -RollbackFullSync
+powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -Rollback
 ```
 
-> Only reverts tickets affected by the last `-FullSync` run. Deletes the manifest after success.
-> Preview with `-RollbackFullSync -DryRun` before committing.
+> Reverts only the tickets affected by the last live run - whether that was a regular sync or a `-FullSync`. Deletes the manifest after success.
+> Preview with `-Rollback -DryRun` before committing. `-RollbackFullSync` still works as a legacy alias for `-Rollback`.
 
 **What it syncs:** Status, Week (iteration), Priority, Size, Estimate, Start date, Target date (→ End date)
 
@@ -68,7 +68,7 @@ powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -Ro
 - **Batched GraphQL mutations** — Multiple field updates per item are sent in a single API call
 - **Dry-run mode** — Preview all changes without modifying anything (`-DryRun` flag)
 - **Full-sync mode** — One-time backfill that bypasses the week filter and syncs every item with a valid status (`-FullSync` flag)
-- **Rollback support** — Reverts only the tickets affected by the last `-FullSync` using an auto-saved manifest (`-RollbackFullSync` flag)
+- **Rollback support** — Reverts only the tickets affected by the last live run (regular or full sync) using an auto-saved manifest (`-Rollback` flag)
 - **Rate limit awareness** — Pre-checks GitHub API budget before starting
 - **Automatic retry** — Retries transient API failures and rate-limit errors
 - **ID caching** — Caches project IDs in config to avoid redundant lookups

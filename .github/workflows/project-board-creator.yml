@@ -20,6 +20,11 @@ permissions:
 jobs:
   clone-and-register:
     runs-on: ubuntu-latest
+    # Shared with sync-boards.yml's sync-boards job: both commit to
+    # scripts/sync-boards/sync-config.json on main, so they must never run concurrently.
+    concurrency:
+      group: board-config-writer
+      cancel-in-progress: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
