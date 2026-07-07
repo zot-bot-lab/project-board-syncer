@@ -29,7 +29,7 @@ jobs:
       - name: 🔍 Fetch and Clone Project Board Layout
         id: clone
         env:
-          GH_TOKEN: ${{ secrets.CROSS_ORG_PROJECT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           TEMPLATE_ORG: "zot-bot-lab"
           TEMPLATE_NUMBER: 2
           DEST_ORG: ${{ inputs.destination_org }}
@@ -38,7 +38,7 @@ jobs:
           set -euo pipefail
 
           if [ -z "${GH_TOKEN:-}" ]; then
-            echo "❌ Error: The 'CROSS_ORG_PROJECT_TOKEN' repository secret is not set or is empty."
+            echo "❌ Error: The 'GH_PERSONAL_ACCESS_TOKEN' repository secret is not set or is empty."
             echo "This workflow requires a Personal Access Token (PAT) with cross-organization permissions."
             echo "Please set up the repository secret by following the README instructions."
             exit 1
