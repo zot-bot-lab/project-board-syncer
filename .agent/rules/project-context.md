@@ -1,8 +1,8 @@
 ---
-description: Project context and configuration for project-board-syncer
+description: Project context and configuration for project-board-automations
 ---
 
-# Project Board Syncer
+# Project Board Automations
 
 This project contains agent workflows for project management automation across GitHub organizations.
 

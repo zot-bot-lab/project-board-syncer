@@ -1,4 +1,4 @@
-# Project Board Syncer
+# Project Board Automations
 
 A collection of automated workflows for managing GitHub Project Boards across multiple organizations.
 
@@ -38,7 +38,7 @@ powershell -ExecutionPolicy Bypass -File scripts/sync-boards/sync-boards.ps1 -Ro
 Clones the standardized project board layout from `zot-bot-lab` (#2) into a target organization, automatically appends the new board configuration to `scripts/sync-boards/sync-config.json`, runs validation tests, and commits/pushes the updated configuration back to this repository.
 
 **How to run:**
-1. Go to the [**Actions**](https://github.com/zot-bot-lab/project-board-syncer/actions) tab of this repository.
+1. Go to the [**Actions**](https://github.com/zot-bot-lab/project-board-automations/actions) tab of this repository.
 2. Select **Create Standard Project Board** from the sidebar.
 3. Click **Run workflow**, fill in the **Destination Org** and **Project Title**, and run it.
 
@@ -69,7 +69,7 @@ Can also be triggered manually via `workflow_dispatch`.
 
 ## Project Structure
 ```
-project-board-syncer/
+project-board-automations/
 ├── .agent/
 │   ├── rules/          # AI agent rules & context
 │   └── workflows/      # Slash command definitions
