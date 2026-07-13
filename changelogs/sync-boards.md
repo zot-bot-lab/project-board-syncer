@@ -2,6 +2,78 @@
 
 ## 2026-07-13
 
+### V3 - 11:01 AM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 3     | 2       | 764       |
+
+
+#### StudyReserve Product Board - Skipped
+*No items found in the current week.*
+
+#### StudyQ Product Board - Skipped
+*No items found in the current week.*
+
+#### EarlyEmu - Document Generator - +1 added, ~2 updated, =726 skipped
+  - **[UPDATE]** Feedback changes - 06/17 - changed: Week
+  - **[UPDATE]** Setup cron jobs - changed: Week
+  - **[ADD]** Request card details upfront - fields set: Status: Ready, Week
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### Assetshield Product Board - Skipped
+*No items found in the current week.*
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Hedwige-crawling - Skipped
+*No items found in the current week.*
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - Skipped
+*No items found in the current week.*
+
+#### QueueUp Product Board - +0 added, ~0 updated, =38 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - Skipped
+*No items found in the current week.*
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+#### SL Drive Product Board - Skipped
+*No items found in the current week.*
+
+#### BespokeBuilds Board - Skipped
+*No items found in the current week.*
+
+#### SpendSei Product Board - +2 added, ~0 updated, =0 skipped
+  - **[ADD]** [Fix] App store review failure - fields set: Status: In review, Week
+  - **[ADD]** iOS release after the fix - fields set: Status: Ready, Week
+
 ### V2 - 10:01 AM
 
 | Added | Updated | Skipped |
