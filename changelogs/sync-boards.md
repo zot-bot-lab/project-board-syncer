@@ -2,6 +2,72 @@
 
 ## 2026-07-23
 
+### V10 - 06:01 PM
+
+| Added | Updated | Skipped |
+|-------|---------|---------|
+| 0     | 3       | 893       |
+
+
+#### StudyReserve Product Board - Skipped
+*No items found in the current week.*
+
+#### StudyQ Product Board - +0 added, ~0 updated, =50 skipped
+
+#### EarlyEmu - Document Generator - +0 added, ~0 updated, =734 skipped
+
+#### UnbrandedLK Product Board - Skipped
+*No items found in the current week.*
+
+#### Assetshield Product Board - Skipped
+*No items found in the current week.*
+
+#### SRM Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Product Board - Skipped
+*No items found in the current week.*
+
+#### Lexigram Marketing Board - Skipped
+*No items found in the current week.*
+
+#### Hedwige-crawling - +0 added, ~3 updated, =35 skipped
+  - **[UPDATE]** [P2] Grigny91 Open Data (Open Data Export) - Week 4 - changed: Status: In Review
+  - **[UPDATE]** [P2] Grand Paris Sud SCDL (data.gouv.fr) - Week 5 - changed: Status: In Review, Week
+  - **[UPDATE]** [P2] Soissons Municipal Deliberations (data.gouv.fr) - Week 5 - changed: Status: In Review, Week
+
+#### Medichive Product Board - Skipped
+*No items found in the current week.*
+
+#### Zotizens Product Board - Skipped
+*No items found in the current week.*
+
+#### BYM Project Board - Skipped
+*No items found in the current week.*
+
+#### QueueUp Product Board - +0 added, ~0 updated, =40 skipped
+
+#### Invoyze Product Board - Skipped
+*No items found in the current week.*
+
+#### Yanthra Product project - Skipped
+*No items found in the current week.*
+
+#### ZOT Web V6 Product Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Sales Board - Skipped
+*No items found in the current week.*
+
+#### ZOT Marketing Board - Skipped
+*No items found in the current week.*
+
+#### SL Drive Product Board - +0 added, ~0 updated, =24 skipped
+
+#### BespokeBuilds Board - +0 added, ~0 updated, =1 skipped
+
+#### SpendSei Product Board - +0 added, ~0 updated, =9 skipped
+
 ### V9 - 05:01 PM
 
 | Added | Updated | Skipped |
